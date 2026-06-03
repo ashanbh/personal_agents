@@ -20,6 +20,13 @@ LOG="../logs/run.log"
 mkdir -p ../logs
 
 echo "===== run $(date) =====" >> "$LOG"
+
+# Refresh birthdays from the Google Sheet, then rebuild birthdays_clean.csv.
+# (sync_birthdays.py runs preprocess.py itself after merging, so the clean file
+#  the sender reads below is always up to date. If the fetch fails, the send
+#  still proceeds with the last-known clean file.)
+/usr/bin/python3 sync_birthdays.py >> "$LOG" 2>&1
+
 /usr/bin/python3 send_birthday_messages.py --csv "$CSV" --send >> "$LOG" 2>&1
 
 # Weekly log rotation: backs up + clears all logs on Sundays, no-op otherwise.

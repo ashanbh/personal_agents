@@ -1,0 +1,23 @@
+[project]
+name = "argus"
+version = "0.1.0"
+description = "Monitoring + notifications (Slack, email) for the personal agents."
+authors = [{ name = "Amit", email = "engineering@bittlebits.ai" }]
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31",
+    "python-dotenv>=1.0",
+]
+
+[tool.poetry]
+# Scripts live directly in argus/ rather than an installable package.
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+# ruff = "^0.6"
+# pytest = "^8.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
