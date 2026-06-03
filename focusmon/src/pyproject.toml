@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "focusmon"
+version = "0.1.0"
+description = "Focus monitoring tool with email reporting"
+requires-python = ">=3.11"
+dependencies = [
+    "python-dotenv>=1.0.0",
+    # macOS-only — used by check_fomi.py to enumerate windows without screenshots.
+    "pyobjc-framework-Quartz>=10.0; sys_platform == 'darwin'",
+]
+
+[tool.poetry]
+package-mode = false
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
