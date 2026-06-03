@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.claudia.birthday</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/amit/PROJ/ASHANBH/personal_agents/birthdays/code/birthday_cron.sh</string>
+    </array>
+
+    <!-- Run every day at 06:00. launchd will also run a missed job when the
+         Mac next wakes, unlike cron. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>6</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- Don't fire on load; only at the scheduled time. -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/amit/PROJ/ASHANBH/personal_agents/birthdays/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/amit/PROJ/ASHANBH/personal_agents/birthdays/logs/launchd.err.log</string>
+</dict>
+</plist>

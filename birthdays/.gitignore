@@ -1,0 +1,11 @@
+# Private data — phone numbers, contacts export, match logs. Do NOT commit.
+data/
+logs/
+
+# Python / Poetry
+.venv/
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store

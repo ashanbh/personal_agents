@@ -1,0 +1,26 @@
+[project]
+name = "birthday-messenger"
+version = "0.1.0"
+description = "Send Happy Birthday iMessages / WhatsApps from a CSV of contacts."
+authors = [{ name = "Amit", email = "engineering@bittlebits.ai" }]
+license = "MIT"
+requires-python = ">=3.10"
+# No runtime third-party deps yet — the scripts use only the standard library.
+# Add real dependencies here as the project grows, e.g.:
+#   "phonenumbers>=8.13",   # for robust phone-number parsing/validation
+dependencies = []
+
+[tool.poetry]
+# Scripts live in ./code rather than an installable package, so run in
+# package mode off (Poetry just manages the venv + dependencies).
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+# Placeholder dev tooling — uncomment/adjust as desired.
+# ruff = "^0.6"
+# black = "^24.0"
+# pytest = "^8.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
