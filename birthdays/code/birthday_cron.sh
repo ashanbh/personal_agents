@@ -16,8 +16,11 @@ cd "$(dirname "$0")" || exit 1
 # Live mode: uses the real contact list. Only people whose birthday is TODAY
 # get a message (the sender filters by date by default).
 CSV="../data/birthdays_clean.csv"
-LOG="../logs/cron.log"
+LOG="../logs/run.log"
 mkdir -p ../logs
 
-echo "===== cron run $(date) =====" >> "$LOG"
+echo "===== run $(date) =====" >> "$LOG"
 /usr/bin/python3 send_birthday_messages.py --csv "$CSV" --send >> "$LOG" 2>&1
+
+# Weekly log rotation: backs up + clears all logs on Sundays, no-op otherwise.
+/usr/bin/python3 postprocess.py >> "$LOG" 2>&1
