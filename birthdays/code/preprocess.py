@@ -27,7 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_IN = os.path.join(HERE, "..", "data", "birthdays.csv")
 DEFAULT_OUT = os.path.join(HERE, "..", "data", "birthdays_clean.csv")
 
-FIELDS = ["Name", "Birthday", "Method", "Phone Number"]
+FIELDS = ["Name", "First Name", "Last Name", "Birthday", "Method", "Phone Number", "Template"]
 
 
 def clean_name(name: str) -> str:
@@ -46,8 +46,17 @@ def clean_method(method: str) -> str:
 
 
 def to_e164(phone: str) -> str:
-    digits = re.sub(r"\D", "", phone or "")
-    return "+" + digits if digits else ""
+    """Normalize one or more comma-separated numbers to E.164, rejoined with ', '.
+
+    A cell may contain multiple numbers (e.g. a shared family line), so each is
+    normalized independently rather than fusing all digits into one number.
+    """
+    out = []
+    for part in (phone or "").split(","):
+        d = re.sub(r"\D", "", part)
+        if d:
+            out.append("+" + d)
+    return ", ".join(out)
 
 
 def clean_birthday(b: str) -> str:
@@ -75,9 +84,12 @@ def main() -> int:
         before = (r.get("Phone Number") or "").strip()
         row = {
             "Name": clean_name(r.get("Name")),
+            "First Name": (r.get("First Name") or "").strip(),
+            "Last Name": (r.get("Last Name") or "").strip(),
             "Birthday": clean_birthday(r.get("Birthday")),
             "Method": clean_method(r.get("Method")),
             "Phone Number": to_e164(r.get("Phone Number")),
+            "Template": (r.get("Template") or "").strip(),
         }
         if before and before != row["Phone Number"]:
             fixed += 1

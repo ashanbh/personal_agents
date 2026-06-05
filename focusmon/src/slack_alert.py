@@ -1,27 +1,35 @@
-"""Minimal Slack webhook helper for FocusMon real-time alerts.
+"""FocusMon Slack alert helper — thin wrapper around argus/notify_via_slack.py.
 
-The webhook URL lives in .env as SLACK_WEBHOOK_URL. While it's the placeholder
-value (REPLACE_ME / empty / unset), send_slack() prints a notice and returns
-False rather than failing — that way the hourly Fomi-check task can call it
+The webhook URL comes from the focusmon `.env` as SLACK_WEBHOOK_URL. While
+that value is the placeholder REPLACE_ME / empty / unset, send_slack() prints
+a notice and returns False rather than failing — that way callers can fire
 unconditionally before the user has configured the webhook.
 
-CLI usage:
+The shared notification primitive lives in
+`/Users/amit/PROJ/ASHANBH/personal_agents/argus/notify_via_slack.py`. This
+wrapper only adds the FocusMon-specific bits the argus core doesn't know
+about: mention prefix (`<!here> <@U…>`) and the placeholder-aware skip.
+
+CLI:
     poetry run python slack_alert.py "Fomi is not running right now"
+    poetry run python slack_alert.py --no-mention "quiet test"
 """
 
 from __future__ import annotations
 
-import json
 import os
 import sys
-import urllib.error
-import urllib.request
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 PLACEHOLDER_VALUES = {"", "REPLACE_ME", "PLACEHOLDER", "TODO"}
+
+_ARGUS_DIR = os.environ.get(
+    "ARGUS_DIR",
+    os.path.expanduser("~/PROJ/ASHANBH/personal_agents/argus"),
+)
 
 
 def _webhook_url() -> str | None:
@@ -42,24 +50,28 @@ def _mention_prefix() -> str:
     return (os.getenv("SLACK_MENTION_PREFIX") or "").strip()
 
 
+def _ensure_argus_path() -> None:
+    if _ARGUS_DIR not in sys.path:
+        sys.path.insert(0, _ARGUS_DIR)
+
+
 def send_slack(
     text: str,
     *,
     raise_on_error: bool = False,
     mention: bool = True,
 ) -> bool:
-    """Post a message to the configured Slack webhook.
+    """Post a message to the configured Slack webhook via argus.
 
     Args:
         text: Plain text message body. Slack mrkdwn is supported.
         raise_on_error: If True, re-raise transport errors instead of swallowing.
-        mention: If True (default), prepend SLACK_MENTION_PREFIX (e.g. @here + @user)
-                 so the message produces a real notification. Pass False for quiet
-                 messages like smoke tests.
+        mention: If True (default), prepend SLACK_MENTION_PREFIX so the message
+            produces a real notification. Pass False for quiet messages.
 
     Returns:
-        True if Slack returned 2xx, False if the webhook is not yet configured
-        or if the post failed (and raise_on_error is False).
+        True if the webhook accepted the message, False if the webhook is not
+        yet configured or the post failed (and raise_on_error is False).
     """
     url = _webhook_url()
     if url is None:
@@ -75,25 +87,24 @@ def send_slack(
         if prefix:
             text = f"{prefix} {text}"
 
-    payload = json.dumps({"text": text, "link_names": 1}).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
+    _ensure_argus_path()
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            ok = 200 <= resp.status < 300
-            if not ok:
-                body = resp.read().decode("utf-8", errors="replace")
-                print(
-                    f"[slack_alert] Slack responded {resp.status}: {body}",
-                    file=sys.stderr,
-                )
-            return ok
-    except (urllib.error.URLError, TimeoutError) as exc:
-        print(f"[slack_alert] Webhook POST failed: {exc}", file=sys.stderr)
+        from notify_via_slack import send_slack as _argus_send_slack
+    except ImportError as exc:
+        msg = (
+            f"[slack_alert] Could not import argus from {_ARGUS_DIR}: {exc}. "
+            f"Check ARGUS_DIR or run `poetry install` so requests is available."
+        )
+        print(msg, file=sys.stderr)
+        if raise_on_error:
+            raise
+        return False
+
+    try:
+        _argus_send_slack(text, webhook_url=url)
+        return True
+    except Exception as exc:
+        print(f"[slack_alert] argus.send_slack failed: {exc}", file=sys.stderr)
         if raise_on_error:
             raise
         return False

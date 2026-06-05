@@ -12,12 +12,12 @@
         <string>/Users/amit/PROJ/ASHANBH/personal_agents/birthdays/code/birthday_cron.sh</string>
     </array>
 
-    <!-- Run every day at 06:00. launchd will also run a missed job when the
-         Mac next wakes, unlike cron. -->
+    <!-- Run every day at 11:00 AM (Mac local time). launchd will also run a
+         missed job when the Mac next wakes, unlike cron. -->
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
-        <integer>6</integer>
+        <integer>11</integer>
         <key>Minute</key>
         <integer>0</integer>
     </dict>

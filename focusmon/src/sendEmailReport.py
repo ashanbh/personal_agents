@@ -20,11 +20,8 @@ from __future__ import annotations
 
 import argparse
 import os
-import smtplib
 import sys
 from datetime import date as date_cls, datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 from dotenv import load_dotenv
 
@@ -40,42 +37,74 @@ from log_reader import (
 
 load_dotenv()
 
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-
-# SMTP_USER is the auth login. If somebody has put a comma-list in the env file
-# (only the first address is a real Gmail with the app password), take the first
-# entry so SMTP login still works.
-_SMTP_USER_RAW = os.getenv("SMTP_USER") or ""
-SMTP_USER = _SMTP_USER_RAW.split(",")[0].strip()
-
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SMTP_TO = os.getenv("SMTP_TO", "amit@bittlebits.ai")
 
 
 # ---------------------------------------------------------------------------
-# SMTP
+# Argus-backed SMTP
 # ---------------------------------------------------------------------------
+#
+# Notifications are sent via the shared argus helpers
+# (~/PROJ/ASHANBH/personal_agents/argus/notify_via_email.py). This module keeps
+# its existing public API — `send_email(to, subject, body, html=False, plain=None)`
+# — and delegates to argus for the actual SMTP work. The argus location can be
+# overridden via the ARGUS_DIR env var if the project moves.
+
+_ARGUS_DIR = os.environ.get(
+    "ARGUS_DIR",
+    os.path.expanduser("~/PROJ/ASHANBH/personal_agents/argus"),
+)
 
 
-def send_email(to: list[str], subject: str, body: str, html: bool = False) -> None:
-    """Send an email to one or more recipients."""
-    if not SMTP_USER or not SMTP_PASSWORD:
-        raise EnvironmentError("SMTP_USER and SMTP_PASSWORD must be set in the .env file.")
+def _ensure_argus_path() -> None:
+    if _ARGUS_DIR not in sys.path:
+        sys.path.insert(0, _ARGUS_DIR)
 
-    msg = MIMEMultipart("alternative")
-    msg["From"] = SMTP_USER
-    msg["To"] = ", ".join(to)
-    msg["Subject"] = subject
 
-    mime_type = "html" if html else "plain"
-    msg.attach(MIMEText(body, mime_type))
+def _strip_tags(html_text: str) -> str:
+    """Crude HTML-to-plain fallback used only when html=True is passed without
+    an explicit plain= alternative. Mail clients that can render HTML will see
+    the HTML version; this just keeps text-only clients from getting a blob of
+    markup."""
+    import re
+    text = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", html_text, flags=re.S | re.I)
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.I)
+    text = re.sub(r"</p\s*>", "\n\n", text, flags=re.I)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = re.sub(r"\s+\n", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip() + "\n\n(This message is best viewed as HTML.)"
 
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-        server.ehlo()
-        server.starttls()
-        server.login(SMTP_USER, SMTP_PASSWORD)
-        server.sendmail(SMTP_USER, to, msg.as_string())
+
+def send_email(
+    to: list[str],
+    subject: str,
+    body: str,
+    html: bool = False,
+    plain: str | None = None,
+) -> None:
+    """Send an email to one or more recipients via the shared argus helper.
+
+    Signature is kept backward-compatible:
+      - html=False: `body` is plain text.
+      - html=True : `body` is HTML; pass `plain=<text>` for a true plain
+                    alternative, otherwise we synthesize one by stripping tags.
+    """
+    _ensure_argus_path()
+    try:
+        from notify_via_email import send_email as _argus_send_email
+    except ImportError as exc:
+        raise RuntimeError(
+            f"Could not import argus from {_ARGUS_DIR}. Check ARGUS_DIR or that "
+            f"argus/notify_via_email.py exists. Underlying error: {exc}"
+        ) from exc
+
+    to_str = ", ".join(to)
+    if html:
+        plain_body = plain if plain is not None else _strip_tags(body)
+        _argus_send_email(subject, plain_body, to=to_str, html=body)
+    else:
+        _argus_send_email(subject, body, to=to_str)
 
 
 # ---------------------------------------------------------------------------
@@ -180,9 +209,9 @@ Missing hours typically mean the Mac was off / asleep when the hourly cron tried
 
 
 def send_report(target: date_cls | None = None, to: list[str] | None = None) -> None:
-    subject, html, _plain = build_report(target)
+    subject, html, plain = build_report(target)
     recipients = to or [r.strip() for r in SMTP_TO.split(",") if r.strip()]
-    send_email(recipients, subject, html, html=True)
+    send_email(recipients, subject, html, html=True, plain=plain)
 
 
 # ---------------------------------------------------------------------------

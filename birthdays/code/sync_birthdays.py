@@ -39,7 +39,7 @@ SHEET_ID = os.environ.get("BIRTHDAYS_SHEET_ID", "1-hxmSnI8Fx18uX9P3bkr1xHxSwJhY6
 GID = os.environ.get("BIRTHDAYS_SHEET_GID", "1258137395")  # the "Birthdays" tab
 EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID}"
 
-FIELDS = ["Name", "Birthday", "Method", "Phone Number"]
+FIELDS = ["Name", "First Name", "Last Name", "Birthday", "Method", "Phone Number", "Template"]
 
 
 def norm_name(s):
@@ -95,24 +95,36 @@ def main():
         if not name:
             continue
         key = norm_name(name)
+        s_first = (srow.get("First Name") or "").strip()
+        s_last = (srow.get("Last Name") or "").strip()
         s_bday = (srow.get("Birthday") or "").strip()
         s_method = clean_method(srow.get("Method"))
-        s_phone = (srow.get("Phone Number") or "").strip()
+        # The sheet's phone column is "Phone Number(s)" (may hold a comma-separated
+        # list); older sheets used "Phone Number". Map either to the local column.
+        s_phone = (srow.get("Phone Number(s)") or srow.get("Phone Number") or "").strip()
+        s_template = (srow.get("Template") or "").strip()
 
         if key not in by_name:
             additions.append({
-                "Name": name, "Birthday": s_bday,
-                "Method": s_method, "Phone Number": s_phone,
+                "Name": name, "First Name": s_first, "Last Name": s_last,
+                "Birthday": s_bday, "Method": s_method,
+                "Phone Number": s_phone, "Template": s_template,
             })
             continue
 
         lrow = by_name[key]
         changed = []
-        # Birthday
-        if s_bday and s_bday != (lrow.get("Birthday") or "").strip():
-            changed.append(f"birthday {lrow.get('Birthday','')!r}->{s_bday!r}")
-            lrow["Birthday"] = s_bday
-        # Method
+        # Plain string fields: update when the sheet has a non-empty differing value.
+        for label, col, val in (
+            ("first name", "First Name", s_first),
+            ("last name", "Last Name", s_last),
+            ("birthday", "Birthday", s_bday),
+            ("template", "Template", s_template),
+        ):
+            if val and val != (lrow.get(col) or "").strip():
+                changed.append(f"{label} {lrow.get(col,'')!r}->{val!r}")
+                lrow[col] = val
+        # Method (normalized compare)
         if s_method and clean_method(lrow.get("Method")) != s_method:
             changed.append(f"method {lrow.get('Method','')!r}->{s_method!r}")
             lrow["Method"] = s_method

@@ -2,30 +2,41 @@
 
 FocusMon is a personal ADHD-focus accountability tool. Every 5 minutes, it checks whether **Fomi** is in an active focus session on the Mac. Twice a day it emails the user and their accountability partners a tone-scaled focus report (win / on_track / struggling), every morning it sends a daily recap against a 6-hour focus goal, and at 11:30am weekdays it sends the user a private "focus coach" email that reads recent patterns in the data and suggests 2–3 evidence-based strategies. A real-time Slack alert fires when Fomi is detected as not actively monitoring during the workday.
 
+All notifications (email + Slack) go through the **shared `argus` helpers** at `~/PROJ/ASHANBH/personal_agents/argus`. FocusMon-specific Argus prompts and helpers live in `~/PROJ/ASHANBH/personal_agents/argus/argus_focusmon/`.
+
 ---
 
 ## Repository layout
 
 ```
-focusmon/
-├── .gitignore
-├── logs/                        # One log file per day: YYYY-MM-DD.log
-│   └── cron.log                 # stdout/stderr from cron jobs
-├── messages/                    # Markdown archive of every generated email
-└── src/
-    ├── check_fomi.py            # macOS-native detector — is Fomi actively monitoring?
-    ├── log_reader.py            # Foundation: parse logs, compute DayStats
-    ├── attn_utils.py            # Shared helpers for email scripts (table HTML, plain bar, env)
-    ├── attn_4Hourly.py          # Twice-daily partner emails (tone scales with stats)
-    ├── attn_daily.py            # 3am daily recap email vs. 6-hour focus goal
-    ├── attn_coach.py            # 11:30am weekday private coach email (pattern → strategies)
-    ├── sendEmailReport.py       # Self-report CLI (legacy compliance report)
-    ├── slack_alert.py           # Slack webhook helper for real-time alerts
-    ├── pyproject.toml           # Poetry project metadata
-    ├── poetry.lock
-    ├── .env                     # Secrets & local config (not committed)
-    └── CONTEXT.md               # This file
+~/PROJ/ASHANBH/personal_agents/
+├── argus/                                 # Shared notification + monitoring library
+│   ├── notify_via_email.py                # send_email(subject, body, to=None, html=None)
+│   ├── notify_via_slack.py                # send_slack(text, webhook_url=None)
+│   ├── argus_focusmon/                    # FocusMon-specific Argus pieces
+│   │   ├── monitor_prompt.md              # Canonical coach prompt (mirrored to fomi-coach-morning)
+│   │   └── collect_status.py              # Read-only fact-gathering for the coach
+│   └── pyproject.toml
+└── focusmon/
+    ├── .env                               # Secrets & local config (NOT committed)
+    ├── crontab.txt                        # Reference crontab; install with `crontab crontab.txt`
+    ├── logs/                              # One log file per day: YYYY-MM-DD.log
+    │   └── cron.log                       # stdout/stderr from cron jobs
+    ├── messages/                          # Markdown archive of every generated email
+    └── src/
+        ├── check_fomi.py                  # macOS-native detector — is Fomi actively monitoring?
+        ├── log_reader.py                  # Foundation: parse logs, compute DayStats
+        ├── attn_utils.py                  # Shared helpers (table HTML, plain bar, env)
+        ├── attn_4Hourly.py                # Twice-daily partner emails (tone scales with stats)
+        ├── attn_daily.py                  # 3am daily recap email vs. 6-hour focus goal
+        ├── sendEmailReport.py             # Self-report CLI; exports send_email() (delegates to argus)
+        ├── slack_alert.py                 # FocusMon-side Slack wrapper around argus's notifier
+        ├── pyproject.toml                 # Poetry project metadata
+        ├── poetry.lock
+        └── CONTEXT.md                     # This file
 ```
+
+Note: the focusmon `.env` lives at the **project root** (`focusmon/.env`), not inside `src/`. `python-dotenv`'s default lookup walks up from cwd to find it when scripts run from `src/`.
 
 ---
 
@@ -88,28 +99,24 @@ The same email goes to all of `ACCOUNTABILITY_RECIPIENTS` (user + partners). Eve
 
 `attn_daily.py` runs at 3am (Tue–Sat, covering the previous workday). It compares focused hours against `DAILY_FOCUS_GOAL_HOURS` (default `6`) and sends a brief goal-met / goal-missed summary with the full hour-by-hour table.
 
-### 7. Private focus-coach email — `attn_coach.py`
+### 7. Private focus-coach email — Claude scheduled task `fomi-coach-morning`
 
-`attn_coach.py` runs weekdays at 11:30am, half an hour before the midday accountability email, and is sent **only to the user** (`COACH_RECIPIENT` defaults to `SMTP_TO`). It is *not* shared with accountability partners — the coach is private feedback, not accountability.
+Runs weekdays at 11:30am Pacific (with the usual scheduler jitter), half an hour before the midday accountability email. Sent **only to the user** (`COACH_RECIPIENT` falls back to `SMTP_TO`). Not shared with accountability partners — the coach is private feedback, not accountability.
 
-The script:
+The coach is implemented as a **Claude scheduled task**, not a static Python script. Each run is a fresh Claude session that:
 
-1. Loads `DayStats` for the last `COACH_HISTORY_DAYS` days (default `5`) using `log_reader.stats_for_date`.
-2. Runs pattern detectors against the history. The detectors and what triggers them:
+1. Reads the canonical prompt at `argus/argus_focusmon/monitor_prompt.md` (mirrored as the Claude task's SKILL.md).
+2. Mounts the project, runs `argus/argus_focusmon/collect_status.py` for facts (file presence, last 5 days of compliance %, hour-by-hour, recent message archives, cron tail).
+3. Reads 1–3 recent `messages/*.md` archives to ground itself in what's been communicated.
+4. Identifies the dominant pattern *in the actual numbers* (e.g. "Mornings at 8% but afternoons at 55% — your peak window is later than the schedule assumes").
+5. Optionally does one focused web search.
+6. Picks 2–3 evidence-based strategies from the palette (Pomodoro, If-then plans, Body doubling, Protect peak window, Move at 1pm dip, Five-minute commitment, Strip the workspace, Time-block calendar, Anchor morning routine, Raise the floor, Mark the bright spot) with real source URLs.
+7. Sends via `argus.notify_via_email.send_email` from a one-shot Python invocation that loads `focusmon/.env` first so `COACH_RECIPIENT`/`SMTP_TO` resolve correctly.
+8. Archives the email to `messages/YYYY-MM-DD-coach.md` and writes one outcome line to `argus/logs/monitor.log`.
 
-   | Pattern key | Fires when |
-   |---|---|
-   | `consistently_low` | Avg compliance < 30% across the window |
-   | `cold_start_morning` | 10am–12pm at < 20% AND later in day at least 20pts higher |
-   | `afternoon_dip` | 1–4pm at least 15pts lower than both morning and late-day |
-   | `late_day_peak` | 5–7pm ≥ 50% AND at least 25pts higher than earlier in day |
-   | `improving` | 3+ day window, second half avg > first half avg by 15pts |
-   | `chaotic` | Day-to-day variance ≥ 40pts with no other pattern firing |
+The scheduled task fires only while the Claude desktop app is open — if the app is closed at 11:30am that day's coach is skipped. The accountability emails (cron-driven) are unaffected.
 
-3. Selects 2–3 strategies from a baked-in catalog (`attn_coach.CATALOG`) whose tags overlap with the detected pattern keys. Each strategy has a name, short description, evidence-grounded detail paragraph, "try today" experiment, and a citation URL.
-4. Emails the result and writes a `messages/YYYY-MM-DD-coach.md` archive copy.
-
-The strategies in the catalog are grounded in evidence-based ADHD research — Pomodoro Technique, implementation intentions, body doubling, environmental design, time blocking, the 5-minute rule, circadian-aware "peak window" protection, afternoon-movement, and a "raise the floor" lifestyle reminder for stretches of consistently low compliance. Each carries a source link in the email so the reasoning is auditable.
+**To tune the coach**, edit `argus/argus_focusmon/monitor_prompt.md` and then push the same content into the scheduled task via `mcp__scheduled-tasks__update_scheduled_task` on `fomi-coach-morning`. The .md is the source of truth; the Claude task is a synced copy.
 
 ### 8. Message log — `../messages/`
 
@@ -123,7 +130,28 @@ The file is `# {subject}` followed by the plain-text body. The directory is crea
 
 ### 9. Legacy self-report — `sendEmailReport.py`
 
-The older HTML compliance report. Still works as a CLI for ad-hoc use; not on a schedule anymore.
+The older HTML compliance report. Still works as a CLI for ad-hoc use; not on a schedule anymore. Notably, this module also exports the `send_email(to, subject, body, html=False, plain=None)` function that `attn_4Hourly.py`, `attn_daily.py`, and the Claude coach all use. Since the argus migration, the function is a thin wrapper that delegates SMTP to `argus.notify_via_email.send_email` (loaded via `sys.path` from `~/PROJ/ASHANBH/personal_agents/argus`; override with the `ARGUS_DIR` env var).
+
+### 10. Shared notification helpers — `argus/`
+
+All outgoing email and Slack notifications flow through the shared `argus` library at `~/PROJ/ASHANBH/personal_agents/argus`:
+
+- `argus/notify_via_email.send_email(subject, body, to=None, html=None)` — SMTP via `EmailMessage`. When `html` is supplied, the message is multipart/alternative with `body` as the plain-text fallback. Reads SMTP_* from the **personal_agents** repo-root `.env`.
+- `argus/notify_via_slack.send_slack(text, webhook_url=None)` — webhook POST via `requests`. Reads `SLACK_WEBHOOK_URL` from the personal_agents `.env`.
+
+FocusMon's `sendEmailReport.send_email` and `slack_alert.send_slack` are thin wrappers that translate the focusmon-side signatures and behaviours (HTML+plain pair, SLACK_MENTION_PREFIX, placeholder-aware skip) into argus calls. If you ever need to send a notification from new code, prefer importing from argus directly:
+
+```python
+import sys
+sys.path.insert(0, os.path.expanduser("~/PROJ/ASHANBH/personal_agents/argus"))
+from notify_via_email import send_email
+from notify_via_slack import send_slack
+```
+
+FocusMon-specific Argus pieces (prompts, fact-gathering scripts) live in `argus/argus_focusmon/`:
+
+- `monitor_prompt.md` — canonical prompt for the `fomi-coach-morning` Claude task.
+- `collect_status.py` — read-only fact-gathering script the coach agent runs.
 
 ---
 
@@ -151,8 +179,12 @@ The older HTML compliance report. Still works as a CLI for ad-hoc use; not on a 
 ### Coach (private — not shared with partners)
 | Variable | Description |
 |---|---|
-| `COACH_RECIPIENT` | Comma-separated. Falls back to `SMTP_TO`. Recipient(s) of `attn_coach.py` only — partner addresses should NOT be added here. |
-| `COACH_HISTORY_DAYS` | How many days of history to consider for pattern detection (default `5`). |
+| `COACH_RECIPIENT` | Comma-separated. Falls back to `SMTP_TO`. Recipient(s) of the `fomi-coach-morning` Claude task — partner addresses should NOT be added here. |
+
+### Argus integration
+| Variable | Description |
+|---|---|
+| `ARGUS_DIR` | Override the path used to import argus's helpers. Defaults to `~/PROJ/ASHANBH/personal_agents/argus`. |
 
 ### Detection
 | Variable | Description |
@@ -186,13 +218,6 @@ poetry run python attn_daily.py                               # recap for yester
 poetry run python attn_daily.py --date 2026-05-28
 poetry run python attn_daily.py --dry-run
 poetry run python attn_daily.py --to me@x.com --dry-run
-
-# --- private morning focus coach (NOT sent to partners) ---
-poetry run python attn_coach.py                               # today, default history window
-poetry run python attn_coach.py --dry-run
-poetry run python attn_coach.py --days 7                      # consider last 7 days for pattern
-poetry run python attn_coach.py --force-pattern late_day_peak --dry-run
-poetry run python attn_coach.py --to me@x.com --dry-run
 
 # --- detection ---
 poetry run python check_fomi.py                               # one-off check
@@ -229,15 +254,18 @@ poetry run python slack_alert.py --no-mention "Quiet test, no @here ping"
 
 - `python-dotenv` — loads `.env` into `os.environ`
 - `pyobjc-framework-Quartz` (macOS only) — used by `check_fomi.py` to enumerate windows without screenshots
+- `requests` — used by `argus/notify_via_slack.py`, which `slack_alert.py` delegates to
 - Python ≥ 3.11 (uses `zoneinfo`, PEP 604 unions)
 
-After editing `pyproject.toml`, run `poetry lock && poetry install` from `src/`.
+`argus` is **not** pulled in via pip — `sendEmailReport.py` and `slack_alert.py` import it via `sys.path` from `~/PROJ/ASHANBH/personal_agents/argus` (override with `ARGUS_DIR`).
+
+After editing `pyproject.toml` (e.g. when `requests` was added for the argus migration), run `poetry lock && poetry install` from `src/`.
 
 ---
 
 ## Scheduling
 
-Everything runs from the macOS host crontab. No Claude scheduled tasks involved — the system keeps working whether the Claude desktop app is open or not.
+All recurring jobs except the coach run from the macOS host crontab — the system keeps working whether the Claude desktop app is open or not. The morning focus-coach email runs as a Claude scheduled task (see section 7), so it only fires when the Claude app is open at 11:30am.
 
 ```
 # Fomi state check every 5 minutes, every day
@@ -254,10 +282,11 @@ Everything runs from the macOS host crontab. No Claude scheduled tasks involved 
 
 # Slack-alert-only check at business hours on weekdays
 0 10,11,14,15,16,17 * * 1-5 /bin/bash -lc 'cd ~/PROJ/ASHANBH/personal_agents/focusmon/src && poetry run python check_fomi.py --no-log' >> ~/PROJ/ASHANBH/personal_agents/focusmon/logs/cron.log 2>&1
-
-# Private morning focus-coach email at 11:30am, weekdays — to user only
-30 11 * * 1-5 /bin/bash -lc 'cd ~/PROJ/ASHANBH/personal_agents/focusmon/src && poetry run python attn_coach.py' >> ~/PROJ/ASHANBH/personal_agents/focusmon/logs/cron.log 2>&1
 ```
+
+The reference crontab lives at `focusmon/crontab.txt`. Install with `crontab ~/PROJ/ASHANBH/personal_agents/focusmon/crontab.txt`.
+
+The 11:30am **private focus-coach email is a Claude scheduled task** (`fomi-coach-morning`), not a crontab entry — see section 7.
 
 Install with `crontab -e`. Confirm with `crontab -l`.
 
@@ -280,6 +309,8 @@ On modern macOS, `/usr/sbin/cron` may need Full Disk Access (System Settings →
 - **Soften / sharpen email wording**: edit the three tone branches in `build_email()` in `attn_4Hourly.py`.
 - **Change daily focus goal**: set `DAILY_FOCUS_GOAL_HOURS` in `.env`.
 - **Change lunch exemption hour**: set `LUNCH_HOUR` in `.env`.
-- **Edit the focus-coach strategy catalog**: append to (or modify) `CATALOG` in `attn_coach.py`. Each `Strategy` has tags that match against detected pattern keys (`consistently_low`, `cold_start_morning`, `afternoon_dip`, `late_day_peak`, `improving`, `chaotic`, plus generic ones like `task_initiation`, `sustained_focus`).
-- **Tune coach pattern detection thresholds**: edit `detect_patterns()` in `attn_coach.py` if the auto-fire windows feel too generous or too strict.
+- **Tune the focus-coach voice, strategy palette, or constraints**: edit `argus/argus_focusmon/monitor_prompt.md` then sync the same content into the `fomi-coach-morning` Claude scheduled task via `mcp__scheduled-tasks__update_scheduled_task`.
+- **Disable the focus coach**: disable `fomi-coach-morning` from the Claude sidebar.
+- **Point focusmon at a different argus install**: set `ARGUS_DIR` in `.env` (defaults to `~/PROJ/ASHANBH/personal_agents/argus`).
+- **Add a brand-new notification surface** (Discord, SMS, etc.): add it to `argus/` as a sibling of `notify_via_email.py` / `notify_via_slack.py`; consumers across all personal-agents projects pick it up automatically.
 - **Adjust how many history days the coach considers**: set `COACH_HISTORY_DAYS` in `.env` (default `5`).

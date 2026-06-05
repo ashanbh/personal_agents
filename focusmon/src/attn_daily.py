@@ -327,7 +327,7 @@ def main(argv: list[str] | None = None) -> int:
         print("No ACCOUNTABILITY_RECIPIENTS configured. Set it in .env or pass --to.", file=sys.stderr)
         return 2
 
-    send_email(recipients, subject, html, html=True)
+    send_email(recipients, subject, html, html=True, plain=plain)
     print(f"Sent: {subject} -> {', '.join(recipients)}")
     return 0
 

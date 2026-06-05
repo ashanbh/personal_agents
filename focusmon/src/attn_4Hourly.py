@@ -446,7 +446,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
-    send_email(recipients, subject, html, html=True)
+    send_email(recipients, subject, html, html=True, plain=plain)
     print(f"Sent ({tone}, {period}): {subject} -> {', '.join(recipients)}")
     return 0
 
