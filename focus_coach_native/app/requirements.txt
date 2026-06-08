@@ -1,7 +1,0 @@
-# Focus Coach Native — v0 service deps
-requests>=2.31
-Pillow>=10.0
-
-# Optional: the YOLO object pass. Heavy (pulls in torch). Skip with --no-yolo
-# if you don't want it. Uncomment to enable:
-# ultralytics>=8.2

@@ -1,7 +1,0 @@
-.venv/
-__pycache__/
-*.pyc
-*.png
-yolov8n.pt
-../data/
-data/
