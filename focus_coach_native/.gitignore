@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Runtime screen captures & activity readouts — never commit (privacy)
+data/
+*.png
+
+# Downloaded model weights
+*.pt
+*.onnx
+*.mlmodel
+*.mlpackage
+
+# Swift build output
+.build/
+macos/.build/

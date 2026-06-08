@@ -81,10 +81,10 @@ Check off as we go. Each chunk should fit in one focused session.
 ### Setup
 - [x] Create folder structure (`docs/`, `designs/`, `app/`).
 - [x] Write `plan-context.md`.
-- [ ] Write `docs/prd-overall.md`.
+- [x] Write `docs/prd-overall.md`.
 
 ### Phase A — Prototype
-- [ ] Write `docs/prd-A-prototype.md`.
+- [x] Write `docs/prd-A-prototype.md`.
 - [ ] Sketch `designs/A-prototype.html` (terminal session screenshot mockup).
 - [ ] Scaffold SwiftPM CLI under `app/`.
 - [ ] Implement: `screencapture` → resize → POST to Ollama → parse JSON →
@@ -131,6 +131,56 @@ Check off as we go. Each chunk should fit in one focused session.
 - **2026-06-09** — Spelling `focus_coach_native` (user-chosen). Sibling of
   `focusmon/`. Default model: `moondream`. Local Ollama only. Log format:
   same as focusmon.
+- **2026-06-08** — **Native app platform = Swift, Mac-first.** Chose native
+  Swift over Electron (too heavy for an always-on monitor — bundles Chromium)
+  and Tauri (cross-platform, kept as the option if we ever want one codebase).
+  Rationale: smallest/best-battery, and the heavy integrations (ScreenCaptureKit,
+  Core ML, menu bar, launchd, notarization) are all native Mac APIs. Windows is
+  a separate later app. Scaffolded `macos/` — a SwiftPM CLI `FocusCapture` that
+  captures the main display via `SCScreenshotManager` (macOS 14+) on a timer and
+  deletes each frame by default (no-store promise at the capture layer). Built
+  on the user's Mac (`swift run`) since ScreenCaptureKit can't compile in the
+  Linux sandbox. Next: feed the CGImage to a Core ML classifier instead of
+  saving; then wrap in a menu-bar NSApplication.
+- **2026-06-08** — **No Ollama in the product; cross-platform brain.** Decided
+  the shipped app will NOT depend on Ollama (lay users can't install it) and
+  must be able to run on Windows too, so we won't hard-rely on Apple's models.
+  Architecture is now **best-available classifier per platform with graceful
+  fallback**, behind a pluggable `Backend` interface (`app/backends.py`):
+  - Tier 1 macOS: **Apple Foundation Models (vision)** — verified via web that
+    the framework now accepts image input (on-device ~300M-param vision
+    backbone). Native Swift in the shipped app. No bundle, no download.
+  - Tier 2 Windows: **bundled small VLM (Apple's open-source FastVLM, 0.5B)**
+    via **ONNX Runtime**. Self-contained, portable weights.
+  - Tier 3 anywhere (fallback): **heuristic** — frontmost app name + window
+    title + YOLO face count. No model at all; always works.
+  - dev only: **Ollama** backend kept purely for prompt iteration; not shipped.
+  YOLO is a cheap pre-pass (faces → meeting), NOT the classifier on its own.
+  Implemented + unit-tested the Tier-3 heuristic backend today (8/8 cases);
+  `--backend` selects the tier; `apple`/`onnx` are documented stubs. Packaging
+  target: native Swift app (macOS) signed/notarized; nothing leaves the machine.
+- **2026-06-08** — **Architecture pivot.** Moved Phase A off "Swift CLI +
+  Ollama only" to a **native-capture → Python analysis service** pipeline:
+  `screencapture` → optional YOLO object pass + frontmost-app hint → Ollama
+  vision model (mini LM) → **detailed activity readout (JSONL)** *plus* a
+  throttled focusmon-format log line (so the existing coach pipeline is
+  unchanged). Rationale: the rich readout is the real signal we want to
+  improve on; YOLO is a cheap structured pre-pass (faces → meeting), the
+  vision-LM is the workhorse. Native Swift capture/menu-bar deferred to
+  Phase B; `screencapture` shell-out stands in for now. Built v0 at
+  `app/focus_service.py` (+ README, requirements). Verified the emitted log
+  line parses through focusmon's `log_reader.py` regex. Privacy unchanged:
+  nothing leaves the machine, frames deleted immediately. Models chosen for
+  the accuracy test: moondream + llava. Cloud-API path discussed and
+  deferred (would break the "nothing leaves the Mac" wedge); kept as a
+  possible optional power-user backend later.
+- **2026-06-08** — Wrote `docs/prd-A-prototype.md`. Phase A is a throwaway
+  SwiftPM CLI proving the capture→Ollama→log loop; uses `screencapture`
+  shell-out (not ScreenCaptureKit yet), binary `working|not_working|unknown`,
+  writes focusmon-format lines into focusmon's own `logs/` dir so the existing
+  coach pipeline needs no changes. Risk to settle in Phase A: is `moondream`
+  accurate enough, and what's per-cycle latency. Next chunk: sketch
+  `designs/A-prototype.html`.
 
 ---
 
