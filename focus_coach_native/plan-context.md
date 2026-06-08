@@ -1,4 +1,4 @@
-# Focuss Coach — Plan & Working Context
+# Focus Coach Native — Plan & Working Context
 
 A passive, always-on macOS app that watches your screen, uses a local AI to
 classify what you're doing, and feeds the existing FocusMon + Coach pipeline.
@@ -15,7 +15,7 @@ top section, do one chunk, check it off, write a one-line note.
 ~/PROJ/ASHANBH/personal_agents/
 ├── focusmon/           # existing — cron + logs + accountability emails
 ├── argus/              # existing — shared notifiers + coach prompt
-└── focuss_coach/       # NEW — the native app
+└── focus_coach_native/       # NEW — the native app
     ├── plan-context.md             # this file
     ├── docs/
     │   ├── prd-overall.md          # global PRD (problem, principles, goals)
@@ -113,7 +113,7 @@ Check off as we go. Each chunk should fit in one focused session.
 
 ## Open questions (resolve before each phase)
 
-- [ ] **Name.** Working name is `focuss_coach`. Could pivot to `Glance`,
+- [ ] **Name.** Working name is `focus_coach_native`. Could pivot to `Glance`,
       `Witness`, `Lookout`, or something else for release.
 - [ ] **Default capture interval.** 5 min matches focusmon. Phase A: 5 min.
       Phase B: configurable.
@@ -128,7 +128,7 @@ Check off as we go. Each chunk should fit in one focused session.
 
 ## Decisions log (append as we make them)
 
-- **2026-06-09** — Spelling `focuss_coach` (user-chosen). Sibling of
+- **2026-06-09** — Spelling `focus_coach_native` (user-chosen). Sibling of
   `focusmon/`. Default model: `moondream`. Local Ollama only. Log format:
   same as focusmon.
 

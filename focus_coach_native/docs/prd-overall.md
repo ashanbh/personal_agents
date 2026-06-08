@@ -1,4 +1,4 @@
-# Focuss Coach — PRD (overall)
+# Focus Coach Native — PRD (overall)
 
 ## Problem
 
@@ -61,7 +61,7 @@ Phase-specific success lives in each phase PRD. Globally:
 - **User intervention rate.** After Phase B, the user should pause / resume /
   open settings < 1× per day on average.
 - **Daily coach email quality.** The week after switching from notch
-  detection to focuss_coach as input, the coach email should reference
+  detection to focus_coach_native as input, the coach email should reference
   observations the user couldn't have inferred from notch data alone.
 
 ## Tech direction
