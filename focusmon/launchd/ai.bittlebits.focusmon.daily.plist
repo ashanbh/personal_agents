@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>ai.bittlebits.focusmon.daily</string>
+
+  <!--
+    Run attn_daily at 03:00 Tue–Sat (so "yesterday" is always a weekday). Sun
+    and Mon are skipped because they'd report on Sat or Sun activity, which we
+    don't care about.
+
+    Unlike cron, launchd's StartCalendarInterval has built-in sleep catch-up:
+    if the Mac is asleep at 03:00, the job runs the next time the Mac wakes.
+
+    Install (one-time):
+      ln -sf ~/PROJ/ASHANBH/personal_agents/focusmon/launchd/ai.bittlebits.focusmon.daily.plist \
+            ~/Library/LaunchAgents/ai.bittlebits.focusmon.daily.plist
+      launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/ai.bittlebits.focusmon.daily.plist
+
+    Reload after editing this file:
+      launchctl bootout  gui/$(id -u)/ai.bittlebits.focusmon.daily 2>/dev/null
+      launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/ai.bittlebits.focusmon.daily.plist
+
+    Run once on demand (useful for testing):
+      launchctl kickstart -p gui/$(id -u)/ai.bittlebits.focusmon.daily
+
+    Inspect:
+      launchctl print gui/$(id -u)/ai.bittlebits.focusmon.daily
+
+    Note on Weekday values: launchd uses 0=Sun, 1=Mon, 2=Tue, … 6=Sat.
+    So Tue-Sat is 2,3,4,5,6.
+  -->
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>cd ~/PROJ/ASHANBH/personal_agents/focusmon/src &amp;&amp; poetry run python attn_daily.py --yesterday --live</string>
+  </array>
+
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict>
+      <key>Hour</key><integer>3</integer>
+      <key>Minute</key><integer>0</integer>
+      <key>Weekday</key><integer>2</integer>
+    </dict>
+    <dict>
+      <key>Hour</key><integer>3</integer>
+      <key>Minute</key><integer>0</integer>
+      <key>Weekday</key><integer>3</integer>
+    </dict>
+    <dict>
+      <key>Hour</key><integer>3</integer>
+      <key>Minute</key><integer>0</integer>
+      <key>Weekday</key><integer>4</integer>
+    </dict>
+    <dict>
+      <key>Hour</key><integer>3</integer>
+      <key>Minute</key><integer>0</integer>
+      <key>Weekday</key><integer>5</integer>
+    </dict>
+    <dict>
+      <key>Hour</key><integer>3</integer>
+      <key>Minute</key><integer>0</integer>
+      <key>Weekday</key><integer>6</integer>
+    </dict>
+  </array>
+
+  <key>RunAtLoad</key>
+  <false/>
+
+  <!-- Don't restart on crash; we only want one 3am attempt per day. -->
+  <key>KeepAlive</key>
+  <false/>
+
+  <!-- stdout + stderr both append to the same cron.log used by the rest of FocusMon. -->
+  <key>StandardOutPath</key>
+  <string>/Users/amit/PROJ/ASHANBH/personal_agents/focusmon/logs/cron.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/amit/PROJ/ASHANBH/personal_agents/focusmon/logs/cron.log</string>
+
+  <!-- Inherit a working directory; the -lc shell above already cd's into src/, but
+       launchd needs *some* cwd that exists. -->
+  <key>WorkingDirectory</key>
+  <string>/Users/amit/PROJ/ASHANBH/personal_agents/focusmon</string>
+
+  <!-- Launchd inherits a near-empty PATH. The -lc above sources the login shell
+       so poetry/python land on PATH. This is just belt-and-braces in case the
+       shell init is ever skipped. -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+</dict>
+</plist>
