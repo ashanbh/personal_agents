@@ -1,25 +1,27 @@
-"""Focus service entry point (stub).
+"""Focus service entry point.
 
-The real loop (capture -> backend -> write log line, on an interval) lands in M1.
-For now `main()` resolves config and prints a single well-formed status line so
-`python -m app.focus_service` is runnable from a clean checkout.
+The real capture loop (capture -> backend -> write log line, on an interval)
+lands in M1. For now `main()` resolves config and emits one well-formed log line
+via the M0 log-writer contract, so `python -m app.focus_service` is runnable
+from a clean checkout and proves the output shape end-to-end.
 """
 
 from __future__ import annotations
 
 import sys
 
+from app.backends import Decision
 from app.config import Config
+from app.logwriter import format_line, write_line
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Resolve config and emit one status line. Returns a process exit code."""
+    """Resolve config, write one contract line, and echo it. Returns exit code."""
     cfg = Config.from_env()
-    # Skeleton output; replaced by the real log-writer contract in M0 step 2.
-    print(
-        f"focus_coach_native: backend={cfg.backend} "
-        f"interval={cfg.interval_sec:g}s log={cfg.log_path}"
-    )
+    # No real classifier yet (M1); emit an honest "unknown" status line.
+    decision = Decision(running="unknown", note="service skeleton; no classifier yet")
+    write_line(decision, cfg.log_path)
+    print(format_line(decision))
     return 0
 
 

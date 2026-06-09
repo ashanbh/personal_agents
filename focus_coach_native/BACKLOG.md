@@ -16,8 +16,9 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` done
 - [x] Create `app/` package skeleton: `app/__init__.py`, `app/config.py` (interval,
       paths, backend choice via env), `app/backends.py` (empty `Backend` ABC),
       `app/focus_service.py` (stub `main()`).
-- [ ] Implement the log-line writer matching the contract
+- [x] Implement the log-line writer matching the contract
       `running=yes|no|unknown [| focused=yes|no] | note=...`; append to a log file.
+      (`app/logwriter.py`: `format_line` + `write_line`; wired into `focus_service.main`.)
 - [ ] Add `pytest` harness (`tests/`, `pyproject.toml` or `requirements-dev.txt`)
       and a first test asserting the log writer's exact output format.
 - [ ] CI-lite: a `make test` / `scripts/test.sh` that runs the suite from a clean checkout.

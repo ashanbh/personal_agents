@@ -46,3 +46,4 @@ Durable decisions and working notes. Newest decisions on top.
   (runnable stub `main()`). `Context`/`Decision` carry `running|focused|note` to
   match the M1 interface early. Smoke-verified: imports clean, ABC non-instantiable,
   `python -m app.focus_service` runs. No pytest harness yet (M0 step 3).
+- 2026-06-08: M0 log-writer landed. Contract `running=... [| focused=...] | note=...` lives in `app/logwriter.py` (`format_line` validates running/focused, collapses newlines in note; `write_line` appends + mkdirs). focused omitted when None. Field order fixed.
