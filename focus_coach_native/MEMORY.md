@@ -37,4 +37,12 @@ Durable decisions and working notes. Newest decisions on top.
 ## Status
 - Prototype brain (`app/`) is where classification logic gets nailed first, then
   ported to the native target.
-- Scaffold not yet built; first off-peak run starts at M0 in BACKLOG.md.
+- M0 step 1 done: `app/` scaffold exists (config, backends ABC, focus_service stub).
+
+## Build log
+- **2026-06-08 (peak) — M0 step 1 done.** Created `app/` package: `config.py`
+  (`Config.from_env`, env-overridable interval/log-path/backend), `backends.py`
+  (`Backend` ABC + `Context`/`Decision`/`BackendUnavailable`), `focus_service.py`
+  (runnable stub `main()`). `Context`/`Decision` carry `running|focused|note` to
+  match the M1 interface early. Smoke-verified: imports clean, ABC non-instantiable,
+  `python -m app.focus_service` runs. No pytest harness yet (M0 step 3).

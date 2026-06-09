@@ -13,7 +13,7 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` done
 ---
 
 ## M0 — Project scaffold & dev harness
-- [ ] Create `app/` package skeleton: `app/__init__.py`, `app/config.py` (interval,
+- [x] Create `app/` package skeleton: `app/__init__.py`, `app/config.py` (interval,
       paths, backend choice via env), `app/backends.py` (empty `Backend` ABC),
       `app/focus_service.py` (stub `main()`).
 - [ ] Implement the log-line writer matching the contract
