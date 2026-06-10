@@ -10,6 +10,12 @@ The architect/engineer loop consumes this file. Rules:
 
 Status legend: `[ ]` pending · `[~]` in progress · `[x]` done
 
+**Build order (decided 2026-06-08, PM-confirmed):** Python-first. The native
+Swift/Tauri app is the *deliverable*, but the hard, uncertain part is the
+classifier (tiered Apple FM → ONNX FastVLM → heuristic+YOLO), which is cheaper to
+nail in Python. So: prototype logic in `app/` (M0–M2), then choose the native
+shell via a spike and wrap it (M3). Do **not** start native work before M3.
+
 ---
 
 ## M0 — Project scaffold & dev harness
