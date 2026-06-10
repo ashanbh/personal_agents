@@ -1,0 +1,29 @@
+{
+  "persona": "doctor",
+  "workBundlePrefixes": [
+    "com.epic.", "com.cerner.", "com.athenahealth.", "com.drchrono.",
+    "com.apple.mail", "com.microsoft.Outlook", "com.microsoft.Word",
+    "com.adobe.Acrobat", "com.apple.Preview"
+  ],
+  "nonworkBundlePrefixes": [
+    "com.apple.TV", "com.apple.Music", "com.spotify.client", "com.apple.News",
+    "com.apple.Arcade"
+  ],
+  "workDomainSuffixes": [
+    "uptodate.com", "epic.com", "mychart.com", "doximity.com", "medscape.com",
+    "pubmed.ncbi.nlm.nih.gov", "nejm.org", "jamanetwork.com", "thelancet.com",
+    "docs.google.com", "doxy.me", "amwell.com", "teladoc.com"
+  ],
+  "nonworkDomainSuffixes": [
+    "instagram.com", "tiktok.com", "facebook.com", "x.com", "twitter.com",
+    "reddit.com", "netflix.com", "hulu.com", "twitch.tv", "youtube.com",
+    "espn.com"
+  ],
+  "workAppSubstrings": ["epic", "cerner", "athena"],
+  "nonworkAppSubstrings": [],
+  "meetingBundlePrefixes": [
+    "us.zoom.xos", "com.microsoft.teams", "com.cisco.webexmeetingsapp",
+    "com.apple.FaceTime", "me.doxy."
+  ],
+  "metadataOnlyBundlePrefixes": ["com.epic.", "com.cerner.", "com.athenahealth.", "com.drchrono."]
+}

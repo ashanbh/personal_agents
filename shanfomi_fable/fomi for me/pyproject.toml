@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "fomi4me"
+version = "0.1.0"
+description = "FomiForMe support layer: DB reader, digest builder, Argus checks (interim Python; see DESIGN.md)"
+authors = ["BB Engineering <engineering@bittlebits.ai>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,31 @@
+{
+  "persona": "accountant",
+  "workBundlePrefixes": [
+    "com.microsoft.Excel", "com.apple.iWork.Numbers", "com.intuit.QuickBooks",
+    "com.intuit.turbotax", "com.microsoft.Word", "com.microsoft.Outlook",
+    "com.apple.mail", "com.tinyspeck.slackmacgap", "com.adobe.Acrobat",
+    "com.apple.Preview"
+  ],
+  "nonworkBundlePrefixes": [
+    "com.apple.TV", "com.apple.Music", "com.spotify.client", "com.apple.News",
+    "com.apple.Arcade"
+  ],
+  "workDomainSuffixes": [
+    "turbotax.intuit.com", "quickbooks.intuit.com", "intuit.com", "irs.gov",
+    "adp.com", "gusto.com", "xero.com", "billdotcom.com", "bill.com",
+    "expensify.com", "chase.com", "bankofamerica.com", "wellsfargo.com",
+    "fidelity.com", "schwab.com", "docs.google.com", "sheets.google.com"
+  ],
+  "nonworkDomainSuffixes": [
+    "instagram.com", "tiktok.com", "facebook.com", "x.com", "twitter.com",
+    "reddit.com", "netflix.com", "hulu.com", "twitch.tv", "youtube.com",
+    "espn.com"
+  ],
+  "workAppSubstrings": ["excel", "quickbooks", "turbotax", "numbers"],
+  "nonworkAppSubstrings": [],
+  "meetingBundlePrefixes": [
+    "us.zoom.xos", "com.microsoft.teams", "com.cisco.webexmeetingsapp",
+    "com.apple.FaceTime"
+  ],
+  "metadataOnlyBundlePrefixes": []
+}

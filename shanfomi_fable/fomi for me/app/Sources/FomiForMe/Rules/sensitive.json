@@ -1,0 +1,15 @@
+{
+  "privateDomainSuffixes": [
+    "pornhub.com", "xvideos.com", "xnxx.com", "onlyfans.com", "xhamster.com",
+    "redtube.com", "youporn.com", "chaturbate.com", "stripchat.com",
+    "tinder.com", "bumble.com", "hinge.co", "match.com", "grindr.com",
+    "okcupid.com", "ashleymadison.com",
+    "mychart.org", "webmd.com", "drugs.com", "goodrx.com",
+    "betterhelp.com", "talkspace.com",
+    "creditkarma.com", "experian.com", "annualcreditreport.com"
+  ],
+  "privateBundlePrefixes": [
+    "com.tinder.", "com.bumble.", "co.hinge.", "com.grindr."
+  ],
+  "privateAppSubstrings": []
+}

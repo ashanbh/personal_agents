@@ -1,0 +1,14 @@
+.env
+.build/
+.venv/
+__pycache__/
+*.pyc
+data/*
+!data/.gitkeep
+logs/*
+!logs/.gitkeep
+argus/data/*
+!argus/data/.gitkeep
+argus/logs/*
+!argus/logs/.gitkeep
+.DS_Store

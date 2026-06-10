@@ -1,0 +1,36 @@
+{
+  "persona": "engineer",
+  "workBundlePrefixes": [
+    "com.microsoft.VSCode", "com.apple.dt.Xcode", "com.todesktop.230313mzl4w4u92",
+    "com.googlecode.iterm2", "com.apple.Terminal", "dev.warp.Warp",
+    "com.jetbrains.", "com.sublimetext.", "com.github.GitHubClient",
+    "com.tinyspeck.slackmacgap", "com.figma.Desktop", "md.obsidian",
+    "com.apple.Notes", "com.postmanlabs.mac", "com.tableplus.TablePlus",
+    "com.anthropic.claudefordesktop"
+  ],
+  "nonworkBundlePrefixes": [
+    "com.apple.TV", "com.apple.Music", "com.spotify.client",
+    "com.apple.Photos", "com.apple.News", "com.apple.Arcade",
+    "com.burbn.instagram", "com.zhiliaoapp.musically"
+  ],
+  "workDomainSuffixes": [
+    "github.com", "gitlab.com", "stackoverflow.com", "stackexchange.com",
+    "localhost", "127.0.0.1", "docs.google.com", "developer.apple.com",
+    "docs.claude.com", "claude.ai", "chat.openai.com", "huggingface.co",
+    "linear.app", "atlassian.net", "jira.com", "notion.so", "vercel.com",
+    "aws.amazon.com", "console.cloud.google.com", "pypi.org", "npmjs.com",
+    "readthedocs.io", "swift.org", "rust-lang.org"
+  ],
+  "nonworkDomainSuffixes": [
+    "instagram.com", "tiktok.com", "facebook.com", "x.com", "twitter.com",
+    "reddit.com", "netflix.com", "hulu.com", "disneyplus.com", "twitch.tv",
+    "espn.com", "buzzfeed.com", "9gag.com", "youtube.com"
+  ],
+  "workAppSubstrings": ["xcode", "visual studio", "intellij", "pycharm", "cursor"],
+  "nonworkAppSubstrings": [],
+  "meetingBundlePrefixes": [
+    "us.zoom.xos", "com.microsoft.teams", "com.cisco.webexmeetingsapp",
+    "com.hnc.Discord", "com.apple.FaceTime"
+  ],
+  "metadataOnlyBundlePrefixes": []
+}

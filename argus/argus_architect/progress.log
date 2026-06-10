@@ -1,0 +1,3 @@
+# focus_coach_native build progress (architect loop appends one line per run)
+2026-06-08 16:45 PT | peak | M0:scaffold | done (green, import+ABC+run smoke checks) | next: M0 step2 log-line writer
+2026-06-08 19:00 PT | peak | M0:log-writer | done (green, 12 tests) | next: M0 step3 pytest harness (pyproject/requirements-dev)
