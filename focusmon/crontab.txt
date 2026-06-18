@@ -8,8 +8,10 @@
 #(switched off) Slack-alert-only check at business hours on weekdays (no log write)
 #0 10,11,14,15,16,17 * * 1-5 /bin/bash -lc 'cd ~/PROJ/ASHANBH/personal_agents/focusmon/src && poetry run python check_fomi.py --no-log' >> ~/PROJ/ASHANBH/personal_agents/focusmon/logs/cron.log 2>&1
 
-# Midday accountability email, weekdays
-0 12 * * 1-5 /bin/bash -lc 'cd ~/PROJ/ASHANBH/personal_agents/focusmon/src && poetry run python attn_4Hourly.py --period midday'  >> ~/PROJ/ASHANBH/personal_agents/focusmon/logs/cron.log 2>&1
+# Midday accountability email has been migrated to launchd (catches up after sleep).
+# See ~/PROJ/ASHANBH/personal_agents/focusmon/launchd/ai.bittlebits.focusmon.midday.plist
+# Install instructions live in the plist's header comment.
+# 0 12 * * 1-5 /bin/bash -lc 'cd ~/PROJ/ASHANBH/personal_agents/focusmon/src && poetry run python attn_4Hourly.py --period midday'  >> ~/PROJ/ASHANBH/personal_agents/focusmon/logs/cron.log 2>&1
 
 # (switched off) Evening accountability email, weekdays
 #0 18 * * 1-5 /bin/bash -lc 'cd ~/PROJ/ASHANBH/personal_agents/focusmon/src && poetry run python attn_4Hourly.py --period evening' >> ~/PROJ/ASHANBH/personal_agents/focusmon/logs/cron.log 2>&1
