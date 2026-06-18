@@ -13,6 +13,8 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
                                        action: #selector(togglePause), keyEquivalent: "p")
     private var personaItems: [NSMenuItem] = []
 
+    public override init() { super.init() }
+
     private var persona: String {
         get { UserDefaults.standard.string(forKey: "persona") ?? "engineer" }
         set { UserDefaults.standard.set(newValue, forKey: "persona") }

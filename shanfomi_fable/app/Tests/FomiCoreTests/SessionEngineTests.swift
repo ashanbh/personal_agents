@@ -1,5 +1,5 @@
 import XCTest
-@testable import FomiForMe
+@testable import FomiCore
 
 final class SessionEngineTests: XCTestCase {
     func testOpensAfterConsecutiveWorkTicks() {

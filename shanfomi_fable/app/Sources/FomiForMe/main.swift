@@ -1,4 +1,5 @@
 import AppKit
+import FomiCore
 
 let app = NSApplication.shared
 let delegate = AppDelegate()

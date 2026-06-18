@@ -53,10 +53,12 @@ persona (doctors off?) · sensitive-category list confirmation.
 DESIGN.md                 architecture (v0.3, approved)  ← source of truth
 STATUS.md                 this file
 app/                      Swift SPM menu-bar app (M1, uncompiled)
-  Sources/FomiForMe/      main, AppDelegate, Poller, Classifier, RulePack,
+  Sources/FomiCore/       LIBRARY: AppDelegate, Poller, Classifier, RulePack,
                           SessionEngine, EventStore, BrowserURL, Models
-  Sources/FomiForMe/Rules engineer/accountant/doctor/sensitive JSON packs
-  Tests/FomiForMeTests/   Classifier + SessionEngine unit tests
+  Sources/FomiCore/Rules  engineer/accountant/doctor/sensitive JSON packs
+                          (Bundle.module resources)
+  Sources/FomiForMe/      EXECUTABLE: main.swift only (depends on FomiCore)
+  Tests/FomiCoreTests/    Classifier + SessionEngine tests (@testable FomiCore)
 src/                      fomi4me_db.py (reader, swaps in for argus
                           argus_focusmon/fomi_db.py), digest_builder.py,
                           launchd/ digest plist (18:00)
