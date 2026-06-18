@@ -40,7 +40,7 @@ from sendEmailReport import send_email
 from attn_utils import (
     SUBJECT_NAME,
     ACCOUNTABILITY_RECIPIENTS,
-    all_hours_table_html,
+    swiftbar_card_html,
     plain_bar,
     write_message_log,
 )
@@ -146,39 +146,24 @@ def build_email(
         accent = "#c0392b"
         cta = "Send a check-in"
 
-    # --- Detail table: full hour-by-hour for all tones ---
-    hours_table = all_hours_table_html(stats.slots)
-    detail_html = ""
-    if hours_table:
-        detail_html = (
-            f"<p style='margin-top:16px;color:#555;font-size:13px;font-weight:600;'>"
-            f"Hour by hour &mdash; {focused} of {period_goal} goal hrs focused ({pct}%)</p>"
-            + hours_table
-        )
-
-    html = f"""\
-<html><body style="font-family:-apple-system,Segoe UI,sans-serif;color:#222;max-width:560px;">
-<p style="font-size:14px;color:#666;margin-bottom:2px;">FocusMon &middot; {weekday} {stats.target.isoformat()} ({period})</p>
-<h2 style="margin:4px 0 8px 0;">{emoji} {headline}</h2>
-
-<div style="display:inline-block;background:#f4f6f8;padding:10px 16px;border-radius:8px;margin:6px 0;">
-  <span style="font-size:28px;font-weight:700;color:{accent};">{pct}%</span>
-  <span style="color:#555;font-size:13px;margin-left:8px;">{focused} of {period_goal} goal hrs</span>
-</div>
-
-<p style="font-size:14px;line-height:1.5;">{body_intro}</p>
-
-<p style="font-size:13px;color:#888;font-style:italic;margin-top:4px;">{cta}</p>
-
-{detail_html}
-
-<hr style="border:none;border-top:1px solid #eee;margin:18px 0 8px 0;">
-<p style="color:#888;font-size:11px;">
-You're on this list because {name} set you up as an accountability partner.
-This is an automated message from {name}'s focus monitor. To opt out, just ask {name}.
-</p>
-</body></html>
-"""
+    extra_html = (
+        f"<p style='font-size:14px;line-height:1.5;color:#333;margin:0 0 6px 0;'>{body_intro}</p>"
+        f"<p style='font-size:13px;color:#888;font-style:italic;margin:0 0 12px 0;'>{cta}</p>"
+    )
+    footer_html = (
+        f"<p style='color:#aaaaaa;font-size:11px;margin:0;'>"
+        f"You're receiving this because {name} set you up as an accountability partner. "
+        f"To opt out, just ask {name}.</p>"
+    )
+    html = swiftbar_card_html(
+        header=f"FocusMon &middot; {weekday} {stats.target.isoformat()} ({period})",
+        headline=f"{emoji} {headline}",
+        headline_color=accent,
+        slots=stats.slots,
+        extra_html=extra_html,
+        footer_html=footer_html,
+        card_width=480,
+    )
 
     plain_lines = [
         f"FocusMon -- {weekday} {stats.target.isoformat()} ({period})",

@@ -152,57 +152,103 @@ def build_report(target: date_cls | None = None) -> tuple[str, str, str]:
         plain_lines.append(f"  {markers[slot.status]} {slot.label:>5s}  {slot.note}")
     plain = "\n".join(plain_lines) + "\n"
 
-    # HTML
-    color = {
-        "running":     "#1b8a3a",
-        "not_running": "#c0392b",
-        "unknown":     "#7f8c8d",
-        "missing":     "#bdc3c7",
-        "upcoming":    "#5dade2",
-    }
-    big_color = "#1b8a3a" if s.compliance_pct >= 70 else "#c0392b"
-    rows = []
+    # HTML — SwiftBar-style card
+    weekday_abbr = target.strftime("%a")  # e.g. "Tue"
+    date_str = target.strftime("%b %-d")   # e.g. "Jun 16"
+
+    def _bar_color(pct: int) -> str:
+        if pct >= 75:
+            return "#4a7c59"   # green
+        elif pct >= 25:
+            return "#c8a96e"   # tan / yellow
+        else:
+            return "#b85c5c"   # muted red
+
+    BAR_MAX_PX = 180
+    DOTS = "· " * 12          # placeholder for inactive-hour rows
+
+    hour_rows = []
     for slot in s.slots:
-        rows.append(
+        seq = getattr(slot, "check_sequence", [])
+        if slot.status == "upcoming":
+            hour_rows.append(
+                f"<tr>"
+                f"<td style='color:#cccccc;font-size:13px;width:44px;"
+                f"padding:3px 10px 3px 0;text-align:right;white-space:nowrap;'>{slot.label}</td>"
+                f"<td style='padding:3px 6px;width:{BAR_MAX_PX}px;vertical-align:middle;'>"
+                f"<span style='color:#dddddd;font-size:10px;letter-spacing:2px;'>{DOTS}</span></td>"
+                f"<td style='width:38px;'></td>"
+                f"</tr>"
+            )
+            continue
+
+        if slot.status in ("missing", "lunch"):
+            label_color = "#aaaaaa"
+            bar_html = (
+                f"<span style='color:#dddddd;font-size:10px;letter-spacing:2px;'>{DOTS}</span>"
+            )
+            pct_html = "<span style='color:#aaaaaa;font-size:12px;'>—</span>"
+        else:
+            if seq:
+                pct = round(100 * slot.checks_yes / slot.checks_total) if slot.checks_total else 0
+            else:
+                pct = 100 if slot.status == "running" else 0
+            label_color = _bar_color(pct)
+            filled_px = max(round(BAR_MAX_PX * pct / 100), 0)
+            empty_px = BAR_MAX_PX - filled_px
+            bar_cells = ""
+            if filled_px:
+                bar_cells += (
+                    f"<td style='background:{label_color};width:{filled_px}px;"
+                    f"height:16px;'></td>"
+                )
+            if empty_px:
+                bar_cells += (
+                    f"<td style='background:#e8e8e8;width:{empty_px}px;height:16px;'></td>"
+                )
+            bar_html = (
+                f"<table cellspacing='0' cellpadding='0' "
+                f"style='border-collapse:collapse;width:{BAR_MAX_PX}px;'>"
+                f"<tr>{bar_cells}</tr></table>"
+            )
+            pct_html = (
+                f"<span style='color:{label_color};font-weight:700;"
+                f"font-size:13px;'>{pct}%</span>"
+            )
+
+        hour_rows.append(
             f"<tr>"
-            f"<td style='padding:4px 12px;'>{slot.label}</td>"
-            f"<td style='padding:4px 12px;color:{color[slot.status]};font-weight:600;'>"
-            f"{slot.status.replace('_', ' ')}</td>"
-            f"<td style='padding:4px 12px;color:#555;'>{_html_escape(slot.note)}</td>"
+            f"<td style='color:{label_color};font-size:13px;font-weight:600;width:44px;"
+            f"padding:3px 10px 3px 0;text-align:right;white-space:nowrap;'>{slot.label}</td>"
+            f"<td style='padding:3px 6px;width:{BAR_MAX_PX}px;vertical-align:middle;'>"
+            f"{bar_html}</td>"
+            f"<td style='padding:3px 0 3px 4px;white-space:nowrap;'>{pct_html}</td>"
             f"</tr>"
         )
+
+    summary_color = "#4a7c59" if s.compliance_pct >= 50 else "#c0392b"
     html = f"""\
-<html><body style="font-family:-apple-system,Segoe UI,sans-serif;color:#222;">
-<h2 style="margin-bottom:4px;">FocusMon report</h2>
-<p style="margin-top:0;color:#555;">{weekday}, {target.isoformat()} &middot; work window {hour_label(WORK_START_HOUR)}-{hour_label(WORK_END_HOUR)} {LOCAL_TZ.key}</p>
+<html><body style="margin:0;padding:24px;background:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,sans-serif;">
+<div style="max-width:340px;background:#ffffff;border-radius:12px;padding:16px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.10);">
 
-<div style="display:inline-block;background:#f4f6f8;padding:12px 18px;border-radius:8px;margin:8px 0;">
-  <div style="font-size:32px;font-weight:700;color:{big_color};">{s.compliance_pct}%</div>
-  <div style="color:#555;font-size:13px;">compliance &middot; {s.running_n} of {s.total_completed} completed checks showed Fomi running</div>
+  <!-- header -->
+  <div style="color:#999999;font-size:12px;margin-bottom:6px;">
+    FocusMon daily &middot; {weekday_abbr} {date_str}
+  </div>
+
+  <!-- summary headline -->
+  <div style="color:{summary_color};font-size:17px;font-weight:700;margin-bottom:12px;">
+    {s.running_n} of {s.total_completed} goal hrs focused ({s.compliance_pct}%)
+  </div>
+
+  <hr style="border:none;border-top:1px solid #eeeeee;margin:0 0 10px 0;">
+
+  <!-- hour-by-hour chart -->
+  <table cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+    {''.join(hour_rows)}
+  </table>
+
 </div>
-
-<p>
-  Running: <b>{s.running_n}</b> &middot;
-  Not running: <b>{s.not_running_n}</b> &middot;
-  Unknown: <b>{s.unknown_n}</b> &middot;
-  Missing: <b>{s.missing_n}</b> &middot;
-  Upcoming: <b>{s.upcoming_n}</b>
-</p>
-
-<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-size:13px;">
-<thead><tr style="background:#eef0f2;">
-<th style="padding:6px 12px;text-align:left;">Hour</th>
-<th style="padding:6px 12px;text-align:left;">Status</th>
-<th style="padding:6px 12px;text-align:left;">Note</th>
-</tr></thead>
-<tbody>
-{''.join(rows)}
-</tbody>
-</table>
-
-<p style="color:#888;font-size:11px;margin-top:18px;">
-Missing hours typically mean the Mac was off / asleep when the hourly cron tried to fire.
-</p>
 </body></html>
 """
     return subject, html, plain
