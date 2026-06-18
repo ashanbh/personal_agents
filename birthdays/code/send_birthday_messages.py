@@ -144,25 +144,6 @@ def is_today(birthday: str) -> bool:
         return False
 
 
-DEFAULT_TEMPLATE = "Happy Birthday ${First Name}"
-
-
-def render_template(template: str, name: str, first: str, last: str) -> str:
-    """Render a per-row message template, substituting ${First Name}, ${Last Name},
-    and ${Name}. Falls back to the default template, and derives first/last name
-    from Name when those columns are blank."""
-    template = (template or "").strip() or DEFAULT_TEMPLATE
-    if not first:
-        first = first_name(name)
-    if not last:
-        parts = (name or "").split()
-        last = " ".join(parts[1:]) if len(parts) > 1 else ""
-    fields = {"First Name": first, "Last Name": last, "Name": (name or "").strip()}
-    return re.sub(r"\$\{([^}]+)\}",
-                  lambda m: fields.get(m.group(1).strip(), m.group(0)),
-                  template)
-
-
 def load_rows(csv_path: str):
     with open(csv_path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
@@ -170,12 +151,9 @@ def load_rows(csv_path: str):
             phones = [p.strip() for p in raw_phone.split(",") if p.strip()]
             yield {
                 "name": (row.get("Name") or "").strip(),
-                "first": (row.get("First Name") or "").strip(),
-                "last": (row.get("Last Name") or "").strip(),
                 "birthday": (row.get("Birthday") or "").strip(),
                 "method": (row.get("Method") or "").strip(),
                 "phones": phones,
-                "template": (row.get("Template") or "").strip(),
             }
 
 
@@ -184,10 +162,6 @@ def main() -> int:
     ap.add_argument("--csv", default=DEFAULT_CSV, help="Path to birthdays.csv")
     ap.add_argument("--send", action="store_true",
                     help="Actually send. Without this flag it's a dry run.")
-    ap.add_argument("--remind", action="store_true",
-                    help="Print a reminder of today's birthday messages (for the "
-                         "daily job to relay via Slack/email) instead of sending. "
-                         "Prints NOTHING when there are no birthdays today.")
     ap.add_argument("--all", action="store_true",
                     help="Message everyone regardless of date. "
                          "Default behavior is to only message people whose birthday is TODAY.")
@@ -202,33 +176,8 @@ def main() -> int:
         print(f"ERROR: CSV not found: {csv_path}", file=sys.stderr)
         return 1
 
-    only_today = not args.all
-
-    if args.remind:
-        # Reminder mode: emit ONLY the reminder text (empty = nothing today).
-        lines = []
-        for row in load_rows(csv_path):
-            method = row["method"].lower()
-            if method not in ALLOWED_METHODS:
-                continue
-            if args.channel != "all" and method != args.channel:
-                continue
-            if only_today and not is_today(row["birthday"]):
-                continue
-            if not row["phones"]:
-                continue
-            message = render_template(row["template"], row["name"],
-                                      row["first"], row["last"])
-            chan = "iMessage" if method == "imessage" else "WhatsApp"
-            nums = ", ".join(row["phones"])
-            lines.append(f"• {row['name']} — {chan} {nums} — \"{message}\"")
-        if lines:
-            print(f"🎂 Birthday reminders for {dt.date.today():%m/%d} — "
-                  f"messages to send today:")
-            print("\n".join(lines))
-        return 0
-
     mode = "SEND" if args.send else "DRY-RUN"
+    only_today = not args.all
     print(f"[{mode}] reading {csv_path}")
     if only_today:
         print(f"[{mode}] only messaging birthdays on {dt.date.today():%m/%d} "
@@ -254,7 +203,7 @@ def main() -> int:
             skipped += 1
             continue
 
-        message = render_template(row["template"], name, row["first"], row["last"])
+        message = f"Happy Birthday, {first_name(name)}!"
 
         if method == "imessage":
             addrs = [imessage_address(p) for p in phones]
