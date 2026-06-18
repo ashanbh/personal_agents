@@ -24,6 +24,7 @@ Setup (once, from the project root ~/Desktop/claudia/birthdays):
   poetry install            # creates the virtualenv
 
 Usage (run from the code/ directory; by default only messages TODAY's birthdays):
+  poetry run python send_birthday_messages.py --remind                     # remind-only: print today's reminder, send nothing (used by birthday_cron.sh)
   poetry run python send_birthday_messages.py                              # dry run, today
   poetry run python send_birthday_messages.py --send                       # send to today's birthdays
   poetry run python send_birthday_messages.py --csv ../data/birthdays_test.csv --send  # self-test (Amit)
@@ -151,10 +152,26 @@ def load_rows(csv_path: str):
             phones = [p.strip() for p in raw_phone.split(",") if p.strip()]
             yield {
                 "name": (row.get("Name") or "").strip(),
+                "first": (row.get("First Name") or "").strip(),
+                "last": (row.get("Last Name") or "").strip(),
                 "birthday": (row.get("Birthday") or "").strip(),
                 "method": (row.get("Method") or "").strip(),
                 "phones": phones,
+                "template": (row.get("Template") or "").strip(),
             }
+
+
+def render_template(row: dict) -> str:
+    """Render a row's Template, substituting ${First Name}/${Last Name}/${Name}.
+
+    Falls back to the default greeting when the row has no Template.
+    """
+    tmpl = row.get("template") or "Happy Birthday ${First Name}"
+    first = row.get("first") or first_name(row.get("name", ""))
+    return (tmpl
+            .replace("${First Name}", first)
+            .replace("${Last Name}", row.get("last", ""))
+            .replace("${Name}", row.get("name", "")))
 
 
 def main() -> int:
@@ -162,6 +179,11 @@ def main() -> int:
     ap.add_argument("--csv", default=DEFAULT_CSV, help="Path to birthdays.csv")
     ap.add_argument("--send", action="store_true",
                     help="Actually send. Without this flag it's a dry run.")
+    ap.add_argument("--remind", action="store_true",
+                    help="REMIND-ONLY: print a concise reminder for each matching "
+                         "birthday (who / channel / number(s) / rendered template) and "
+                         "send nothing. Prints nothing when there are no birthdays, so "
+                         "the launchd wrapper can test the output for emptiness.")
     ap.add_argument("--all", action="store_true",
                     help="Message everyone regardless of date. "
                          "Default behavior is to only message people whose birthday is TODAY.")
@@ -176,8 +198,27 @@ def main() -> int:
         print(f"ERROR: CSV not found: {csv_path}", file=sys.stderr)
         return 1
 
-    mode = "SEND" if args.send else "DRY-RUN"
     only_today = not args.all
+
+    # REMIND-ONLY mode: emit a clean reminder per matching birthday and exit.
+    # No headers/footers so empty stdout reliably means "no birthdays today".
+    if args.remind:
+        for row in load_rows(csv_path):
+            method = row["method"].lower()
+            if method not in ALLOWED_METHODS:
+                continue
+            if args.channel != "all" and method != args.channel:
+                continue
+            if only_today and not is_today(row["birthday"]):
+                continue
+            if not row["phones"]:
+                continue
+            label = "iMessage" if method == "imessage" else "WhatsApp"
+            nums = ", ".join(row["phones"])
+            print(f"🎂 {row['name']} — {label} ({nums}) — \"{render_template(row)}\"")
+        return 0
+
+    mode = "SEND" if args.send else "DRY-RUN"
     print(f"[{mode}] reading {csv_path}")
     if only_today:
         print(f"[{mode}] only messaging birthdays on {dt.date.today():%m/%d} "
