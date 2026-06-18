@@ -27,7 +27,7 @@ repo so work can resume on any machine. Read `DESIGN.md` first, then this.
 ## Key decisions already made (don't re-litigate)
 
 - PM relationship: engineering works autonomously; contact PM only for
-  design/mockup reviews and demos, via `~/PROJ/ASHANBH/personal_agents/argus`
+  design/mockup reviews and demos, via `~/PROJ/ASHANBH/personal_agents/argus_common`
   notifiers (desktop/email/iMessage) or chat if active.
 - Native desktop app is critical; Swift, menu-bar, zero runtime deps.
 - Perception (camera/screen) is NEVER stored — classified in memory, dropped.
@@ -70,7 +70,7 @@ Makefile                  build / run / test / digest / health / install-launchd
 
 ## Related external pieces
 
-- `~/PROJ/ASHANBH/personal_agents/argus` — notifiers (email/iMessage/desktop),
+- `~/PROJ/ASHANBH/personal_agents/argus_common` — notifiers (email/iMessage/desktop),
   `argus_focusmon/` morning coach email (M5: point it at our DB via
   `src/fomi4me_db.py`), SMTP creds referenced from `focusmon/.env`.
 - fomilab Fomi (`ai.fomilab.app`) still installed — being replaced by this.

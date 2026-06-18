@@ -2,7 +2,7 @@
 
 FocusMon is a personal ADHD-focus accountability tool. Every 5 minutes, it checks whether **Fomi** is in an active focus session on the Mac. Twice a day it emails the user and their accountability partners a tone-scaled focus report (win / on_track / struggling), every morning it sends a daily recap against a 6-hour focus goal, and at 11:30am weekdays it sends the user a private "focus coach" email that reads recent patterns in the data and suggests 2–3 evidence-based strategies. A real-time Slack alert fires when Fomi is detected as not actively monitoring during the workday.
 
-All notifications (email + Slack) go through the **shared `argus` helpers** at `~/PROJ/ASHANBH/personal_agents/argus`. FocusMon-specific Argus prompts and helpers live in `~/PROJ/ASHANBH/personal_agents/argus/argus_focusmon/`.
+All notifications (email + Slack) go through the **shared `argus` helpers** at `~/PROJ/ASHANBH/personal_agents/argus_common`. FocusMon-specific Argus prompts and helpers live in `~/PROJ/ASHANBH/personal_agents/argus_common/argus_focusmon/`.
 
 ---
 
@@ -130,20 +130,20 @@ The file is `# {subject}` followed by the plain-text body. The directory is crea
 
 ### 9. Legacy self-report — `sendEmailReport.py`
 
-The older HTML compliance report. Still works as a CLI for ad-hoc use; not on a schedule anymore. Notably, this module also exports the `send_email(to, subject, body, html=False, plain=None)` function that `attn_4Hourly.py`, `attn_daily.py`, and the Claude coach all use. Since the argus migration, the function is a thin wrapper that delegates SMTP to `argus.notify_via_email.send_email` (loaded via `sys.path` from `~/PROJ/ASHANBH/personal_agents/argus`; override with the `ARGUS_DIR` env var).
+The older HTML compliance report. Still works as a CLI for ad-hoc use; not on a schedule anymore. Notably, this module also exports the `send_email(to, subject, body, html=False, plain=None)` function that `attn_4Hourly.py`, `attn_daily.py`, and the Claude coach all use. Since the argus migration, the function is a thin wrapper that delegates SMTP to `argus.notify_via_email.send_email` (loaded via `sys.path` from `~/PROJ/ASHANBH/personal_agents/argus_common`; override with the `ARGUS_DIR` env var).
 
 ### 10. Shared notification helpers — `argus/`
 
-All outgoing email and Slack notifications flow through the shared `argus` library at `~/PROJ/ASHANBH/personal_agents/argus`:
+All outgoing email and Slack notifications flow through the shared `argus` library at `~/PROJ/ASHANBH/personal_agents/argus_common`:
 
-- `argus/notify_via_email.send_email(subject, body, to=None, html=None)` — SMTP via `EmailMessage`. When `html` is supplied, the message is multipart/alternative with `body` as the plain-text fallback. Reads SMTP_* from the **personal_agents** repo-root `.env`.
-- `argus/notify_via_slack.send_slack(text, webhook_url=None)` — webhook POST via `requests`. Reads `SLACK_WEBHOOK_URL` from the personal_agents `.env`.
+- `argus_common/notify_via_email.send_email(subject, body, to=None, html=None)` — SMTP via `EmailMessage`. When `html` is supplied, the message is multipart/alternative with `body` as the plain-text fallback. Reads SMTP_* from the **personal_agents** repo-root `.env`.
+- `argus_common/notify_via_slack.send_slack(text, webhook_url=None)` — webhook POST via `requests`. Reads `SLACK_WEBHOOK_URL` from the personal_agents `.env`.
 
 FocusMon's `sendEmailReport.send_email` and `slack_alert.send_slack` are thin wrappers that translate the focusmon-side signatures and behaviours (HTML+plain pair, SLACK_MENTION_PREFIX, placeholder-aware skip) into argus calls. If you ever need to send a notification from new code, prefer importing from argus directly:
 
 ```python
 import sys
-sys.path.insert(0, os.path.expanduser("~/PROJ/ASHANBH/personal_agents/argus"))
+sys.path.insert(0, os.path.expanduser("~/PROJ/ASHANBH/personal_agents/argus_common"))
 from notify_via_email import send_email
 from notify_via_slack import send_slack
 ```
@@ -184,7 +184,7 @@ FocusMon-specific Argus pieces (prompts, fact-gathering scripts) live in `argus/
 ### Argus integration
 | Variable | Description |
 |---|---|
-| `ARGUS_DIR` | Override the path used to import argus's helpers. Defaults to `~/PROJ/ASHANBH/personal_agents/argus`. |
+| `ARGUS_DIR` | Override the path used to import argus's helpers. Defaults to `~/PROJ/ASHANBH/personal_agents/argus_common`. |
 
 ### Detection
 | Variable | Description |
@@ -254,10 +254,10 @@ poetry run python slack_alert.py --no-mention "Quiet test, no @here ping"
 
 - `python-dotenv` — loads `.env` into `os.environ`
 - `pyobjc-framework-Quartz` (macOS only) — used by `check_fomi.py` to enumerate windows without screenshots
-- `requests` — used by `argus/notify_via_slack.py`, which `slack_alert.py` delegates to
+- `requests` — used by `argus_common/notify_via_slack.py`, which `slack_alert.py` delegates to
 - Python ≥ 3.11 (uses `zoneinfo`, PEP 604 unions)
 
-`argus` is **not** pulled in via pip — `sendEmailReport.py` and `slack_alert.py` import it via `sys.path` from `~/PROJ/ASHANBH/personal_agents/argus` (override with `ARGUS_DIR`).
+`argus` is **not** pulled in via pip — `sendEmailReport.py` and `slack_alert.py` import it via `sys.path` from `~/PROJ/ASHANBH/personal_agents/argus_common` (override with `ARGUS_DIR`).
 
 After editing `pyproject.toml` (e.g. when `requests` was added for the argus migration), run `poetry lock && poetry install` from `src/`.
 
@@ -311,6 +311,6 @@ On modern macOS, `/usr/sbin/cron` may need Full Disk Access (System Settings →
 - **Change lunch exemption hour**: set `LUNCH_HOUR` in `.env`.
 - **Tune the focus-coach voice, strategy palette, or constraints**: edit `argus/argus_focusmon/monitor_prompt.md` then sync the same content into the `fomi-coach-morning` Claude scheduled task via `mcp__scheduled-tasks__update_scheduled_task`.
 - **Disable the focus coach**: disable `fomi-coach-morning` from the Claude sidebar.
-- **Point focusmon at a different argus install**: set `ARGUS_DIR` in `.env` (defaults to `~/PROJ/ASHANBH/personal_agents/argus`).
+- **Point focusmon at a different argus install**: set `ARGUS_DIR` in `.env` (defaults to `~/PROJ/ASHANBH/personal_agents/argus_common`).
 - **Add a brand-new notification surface** (Discord, SMS, etc.): add it to `argus/` as a sibling of `notify_via_email.py` / `notify_via_slack.py`; consumers across all personal-agents projects pick it up automatically.
 - **Adjust how many history days the coach considers**: set `COACH_HISTORY_DAYS` in `.env` (default `5`).

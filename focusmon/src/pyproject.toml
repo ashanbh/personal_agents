@@ -11,8 +11,8 @@ dependencies = [
     "python-dotenv>=1.0.0",
     # macOS-only — used by check_fomi.py to enumerate windows without screenshots.
     "pyobjc-framework-Quartz>=10.0; sys_platform == 'darwin'",
-    # Notifications go through the shared argus helpers (~/PROJ/ASHANBH/personal_agents/argus).
-    # argus/notify_via_slack.py uses `requests`, so focusmon needs it on the path too.
+    # Notifications go through the shared argus helpers (~/PROJ/ASHANBH/personal_agents/argus_common).
+    # argus_common/notify_via_slack.py uses `requests`, so focusmon needs it on the path too.
     "requests>=2.31",
 ]
 

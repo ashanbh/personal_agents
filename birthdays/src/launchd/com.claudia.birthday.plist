@@ -9,7 +9,7 @@
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>/Users/amit/PROJ/ASHANBH/personal_agents/birthdays/code/birthday_cron.sh</string>
+        <string>/Users/amit/PROJ/ASHANBH/personal_agents/birthdays/src/birthday_cron.sh</string>
     </array>
 
     <!-- Run every day at 11:00 AM (Mac local time). launchd will also run a

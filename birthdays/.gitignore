@@ -1,6 +1,13 @@
 # Private data — phone numbers, contacts export, match logs. Do NOT commit.
-data/
-logs/
+# Anchored to the agent root so the argus/ scaffolding dirs below stay tracked.
+/data/
+/logs/
+
+# Argus monitoring runtime — keep the dirs (.gitkeep) but not their contents.
+argus/data/*
+!argus/data/.gitkeep
+argus/logs/*
+!argus/logs/.gitkeep
 
 # Python / Poetry
 .venv/

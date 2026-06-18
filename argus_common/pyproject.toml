@@ -1,7 +1,7 @@
 [project]
-name = "argus"
+name = "argus_common"
 version = "0.1.0"
-description = "Monitoring + notifications (Slack, email) for the personal agents."
+description = "Shared notifiers (Slack, email, iMessage, WhatsApp, desktop) + monitor utils for the personal agents."
 authors = [{ name = "Amit", email = "engineering@bittlebits.ai" }]
 license = "MIT"
 requires-python = ">=3.10"

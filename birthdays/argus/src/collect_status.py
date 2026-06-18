@@ -18,10 +18,11 @@ import gzip
 import os
 import re
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.abspath(os.path.join(HERE, "..", ".."))           # personal_agents
-BIRTHDAYS = os.path.join(REPO, "birthdays")
-B_CODE = os.path.join(BIRTHDAYS, "code")
+# Layout: <repo>/birthdays/argus/src/collect_status.py
+HERE = os.path.dirname(os.path.abspath(__file__))                 # birthdays/argus/src
+BIRTHDAYS = os.path.abspath(os.path.join(HERE, "..", ".."))       # birthdays/
+REPO = os.path.abspath(os.path.join(BIRTHDAYS, ".."))             # personal_agents
+B_CODE = os.path.join(BIRTHDAYS, "src")                           # core scripts (was code/)
 B_DATA = os.path.join(BIRTHDAYS, "data")
 B_LOGS = os.path.join(BIRTHDAYS, "logs")
 RUN_LOG = os.path.join(B_LOGS, "run.log")

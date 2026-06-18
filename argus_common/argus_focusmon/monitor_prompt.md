@@ -10,16 +10,16 @@ of yesterday. You may add ONE sentence about today only if the same pattern is
 clearly starting again.
 
 The canonical version of this prompt lives at
-`/Users/amit/PROJ/ASHANBH/personal_agents/argus/argus_focusmon/monitor_prompt.md`.
+`/Users/amit/PROJ/ASHANBH/personal_agents/argus_common/argus_focusmon/monitor_prompt.md`.
 If you edit one, sync the other.
 
 ## Paths
 - Repo root: `/Users/amit/PROJ/ASHANBH/personal_agents`
 - FocusMon: `<repo>/focusmon/` (logs/, messages/, .env, src/)
-- Status helper: `<repo>/argus/argus_focusmon/collect_status.py`
-- Fomi DB reader: `<repo>/argus/argus_focusmon/fomi_db.py`
-- Notifier: `<repo>/argus/notify_via_email.py`
-- Outcome log: `<repo>/argus/logs/monitor.log`
+- Status helper: `<repo>/argus_common/argus_focusmon/collect_status.py`
+- Fomi DB reader: `<repo>/argus_common/argus_focusmon/fomi_db.py`
+- Notifier: `<repo>/argus_common/notify_via_email.py`
+- Outcome log: `<repo>/argus_common/logs/monitor.log`
 
 ## User context
 - Has ADHD. Partners (Shanbhag, Mallika Rao) get separate noon/6pm emails.
@@ -43,11 +43,11 @@ select:mcp__cowork__request_cowork_directory,mcp__workspace__bash,WebSearch
 Compute yesterday's local date (today − 1 day in `America/Los_Angeles`). Run the
 status helper for the broad picture:
 ```
-cd <mount>/argus && python3 argus_focusmon/collect_status.py
+cd <mount>/argus_common && python3 argus_focusmon/collect_status.py
 ```
 Then pull yesterday's full-day Fomi summary explicitly:
 ```
-cd <mount>/argus && python3 argus_focusmon/fomi_db.py --date <YYYY-MM-DD>
+cd <mount>/argus_common && python3 argus_focusmon/fomi_db.py --date <YYYY-MM-DD>
 ```
 Replace `<YYYY-MM-DD>` with yesterday's local date.
 
@@ -151,11 +151,11 @@ strategy from the prior 3–4 days' pattern instead. Don't fake numbers.
 
 ### 8. Send via Argus's notifier
 ```
-cd <mount>/argus && poetry run python -c "
+cd <mount>/argus_common && poetry run python -c "
 import os, sys
 from dotenv import load_dotenv
 load_dotenv(os.path.join('<mount>', 'focusmon', '.env'))
-sys.path.insert(0, '<mount>/argus')
+sys.path.insert(0, '<mount>/argus_common')
 from notify_via_email import send_email
 to_env = os.getenv('COACH_RECIPIENT') or os.getenv('SMTP_TO', '')
 recipients = [r.strip() for r in to_env.split(',') if r.strip()]
@@ -183,7 +183,7 @@ EOF
 ```
 
 ### 10. Log the outcome (one line)
-Append to `<mount>/argus/logs/monitor.log`:
+Append to `<mount>/argus_common/logs/monitor.log`:
 ```
 2026-06-09 11:30 — sent coach email; pattern: <one phrase>
 ```

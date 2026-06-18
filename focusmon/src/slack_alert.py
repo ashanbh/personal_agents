@@ -1,4 +1,4 @@
-"""FocusMon Slack alert helper — thin wrapper around argus/notify_via_slack.py.
+"""FocusMon Slack alert helper — thin wrapper around argus_common/notify_via_slack.py.
 
 The webhook URL comes from the focusmon `.env` as SLACK_WEBHOOK_URL. While
 that value is the placeholder REPLACE_ME / empty / unset, send_slack() prints
@@ -6,7 +6,7 @@ a notice and returns False rather than failing — that way callers can fire
 unconditionally before the user has configured the webhook.
 
 The shared notification primitive lives in
-`/Users/amit/PROJ/ASHANBH/personal_agents/argus/notify_via_slack.py`. This
+`/Users/amit/PROJ/ASHANBH/personal_agents/argus_common/notify_via_slack.py`. This
 wrapper only adds the FocusMon-specific bits the argus core doesn't know
 about: mention prefix (`<!here> <@U…>`) and the placeholder-aware skip.
 
@@ -28,7 +28,7 @@ PLACEHOLDER_VALUES = {"", "REPLACE_ME", "PLACEHOLDER", "TODO"}
 
 _ARGUS_DIR = os.environ.get(
     "ARGUS_DIR",
-    os.path.expanduser("~/PROJ/ASHANBH/personal_agents/argus"),
+    os.path.expanduser("~/PROJ/ASHANBH/personal_agents/argus_common"),
 )
 
 

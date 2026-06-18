@@ -32,7 +32,7 @@ machine-readable JSON report on stdout when something is wrong.
 
 ## Escalation
 
-Notify via the shared notifiers in `~/PROJ/ASHANBH/personal_agents/argus`:
+Notify via the shared notifiers in `~/PROJ/ASHANBH/personal_agents/argus_common`:
 desktop banner for low-sev, email (`notify_via_email.py`) for digest failures,
 iMessage (`notify_via_imessage.py`) for sev-1 privacy audit failures.
 

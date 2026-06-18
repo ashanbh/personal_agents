@@ -6,7 +6,7 @@
 # argus notifiers) so you can send the messages personally.
 # (Manual sending is still available: `python3 send_birthday_messages.py --send`.)
 #
-# Scheduled via the launchd agent code/com.claudia.birthday.plist (11:00 AM).
+# Scheduled via the launchd agent src/launchd/com.claudia.birthday.plist (11:00 AM).
 #
 # NOTE (macOS): the project must live OUTSIDE TCC-protected folders
 # (~/Desktop, ~/Documents, ~/Downloads) or launchd can't even read this script
@@ -16,7 +16,7 @@ cd "$(dirname "$0")" || exit 1
 
 CSV="../data/birthdays_clean.csv"
 LOG="../logs/run.log"
-ARGUS="$(cd ../../argus && pwd)"
+ARGUS="$(cd ../../argus_common && pwd)"
 mkdir -p ../logs
 
 echo "===== run $(date) =====" >> "$LOG"

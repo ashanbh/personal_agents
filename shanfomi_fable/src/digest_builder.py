@@ -58,7 +58,7 @@ def config() -> dict:
         "review_mode": env.get("DIGEST_REVIEW_MODE", "1") != "0",
         "review_recipient": env.get("REVIEW_RECIPIENT", ""),
         "argus_dir": Path(os.path.expanduser(env.get(
-            "ARGUS_DIR", "~/PROJ/ASHANBH/personal_agents/argus"))),
+            "ARGUS_DIR", "~/PROJ/ASHANBH/personal_agents/argus_common"))),
         "smtp_env": Path(os.path.expanduser(env.get(
             "SMTP_ENV", "~/PROJ/ASHANBH/personal_agents/focusmon/.env"))),
     }

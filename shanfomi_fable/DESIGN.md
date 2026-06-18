@@ -60,7 +60,7 @@ Native macOS menu-bar app (Swift/SwiftUI, runs as Login Item) + a small Python s
                                              │ read-only
               ┌──────────────────────────────┴───────────────────────┐
               │ Python support layer (reuses ~/…/personal_agents)     │
-              │ • digest builder → argus/notify_via_email.py          │
+              │ • digest builder → argus_common/notify_via_email.py          │
               │ • argus_focusmon coach email (swap fomi_db → our DB)  │
               │ • Argus monitoring of the agent itself                │
               └───────────────────────────────────────────────────────┘
@@ -116,7 +116,7 @@ Data lifecycle:
 
 ### 3.5 Accountability digests (auto-send)
 
-- Daily email to configured partners, auto-sent (PM decision) via the existing **`argus/notify_via_email.py`** + SMTP creds in `focusmon/.env`. Aligns with the existing noon/6pm partner cadence rather than adding a third stream.
+- Daily email to configured partners, auto-sent (PM decision) via the existing **`argus_common/notify_via_email.py`** + SMTP creds in `focusmon/.env`. Aligns with the existing noon/6pm partner cadence rather than adding a third stream.
 - **Sanitization contract:** digest contains *only* category-level aggregates and streaks — e.g., "Focused 5h 40m (best streak 92 min) · Distracted 1h 10m · 14 drift events · top distraction class: social video." Never app names, titles, URLs, or anything from a `private-*` bucket beyond its contribution to the not-work total.
 - Digest template is a fixed schema rendered from aggregates — the LLM never free-writes partner-facing text, so it cannot leak specifics.
 - Partner config: name, email, schedule, and digest verbosity (stats-only vs. stats+trend chart, reusing the sparkline/hour-grid HTML style already used by the focusmon coach emails).
@@ -188,4 +188,4 @@ Argus watches the agent (capture permission revoked, app crashed, digest failed 
 - Fomi baseline: https://www.fomilab.ai/ (features, pricing; "locally anonymized before AI analysis, we do not store your data")
 - Apple Foundation Models framework (on-device LLM, WWDC25; image input + provider extensions at WWDC26): https://developer.apple.com/documentation/FoundationModels · https://developer.apple.com/videos/play/wwdc2026/339/
 - ScreenCaptureKit (capture + permission model): https://developer.apple.com/documentation/ScreenCaptureKit/capturing-screen-content-in-macos
-- Existing in-house infra: `~/PROJ/ASHANBH/personal_agents/argus` (notifiers, argus_focusmon coach, fomi_db.py reader to be replaced by our own DB)
+- Existing in-house infra: `~/PROJ/ASHANBH/personal_agents/argus_common` (notifiers, argus_focusmon coach, fomi_db.py reader to be replaced by our own DB)

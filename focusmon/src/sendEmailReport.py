@@ -45,14 +45,14 @@ SMTP_TO = os.getenv("SMTP_TO", "amit@bittlebits.ai")
 # ---------------------------------------------------------------------------
 #
 # Notifications are sent via the shared argus helpers
-# (~/PROJ/ASHANBH/personal_agents/argus/notify_via_email.py). This module keeps
+# (~/PROJ/ASHANBH/personal_agents/argus_common/notify_via_email.py). This module keeps
 # its existing public API — `send_email(to, subject, body, html=False, plain=None)`
 # — and delegates to argus for the actual SMTP work. The argus location can be
 # overridden via the ARGUS_DIR env var if the project moves.
 
 _ARGUS_DIR = os.environ.get(
     "ARGUS_DIR",
-    os.path.expanduser("~/PROJ/ASHANBH/personal_agents/argus"),
+    os.path.expanduser("~/PROJ/ASHANBH/personal_agents/argus_common"),
 )
 
 
@@ -96,7 +96,7 @@ def send_email(
     except ImportError as exc:
         raise RuntimeError(
             f"Could not import argus from {_ARGUS_DIR}. Check ARGUS_DIR or that "
-            f"argus/notify_via_email.py exists. Underlying error: {exc}"
+            f"argus_common/notify_via_email.py exists. Underlying error: {exc}"
         ) from exc
 
     to_str = ", ".join(to)

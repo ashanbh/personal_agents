@@ -10,15 +10,15 @@ When something is genuinely demoable, you notify the PM (Amit). Routine progress
 is **silent** — only milestone demos earn a notification.
 
 The canonical version of this prompt lives at
-`/Users/amit/PROJ/ASHANBH/personal_agents/argus/argus_architect/monitor_prompt.md`.
+`/Users/amit/PROJ/ASHANBH/personal_agents/argus_common/argus_architect/monitor_prompt.md`.
 
 ## Paths
 - Repo root: `/Users/amit/PROJ/ASHANBH/personal_agents`
 - Project: `<repo>/focus_coach_native/`  (CONTEXT.md, MEMORY.md, BACKLOG.md, app/, tests/)
 - Backlog: `<repo>/focus_coach_native/BACKLOG.md`  (source of truth for work)
-- Progress log: `<repo>/argus/argus_architect/progress.log`
-- Demo notifier: `<repo>/argus/argus_architect/notify.py`  (stdlib-only; Slack + Email)
-- Outcome log: `<repo>/argus/logs/monitor.log`
+- Progress log: `<repo>/argus_common/argus_architect/progress.log`
+- Demo notifier: `<repo>/argus_common/argus_architect/notify.py`  (stdlib-only; Slack + Email)
+- Outcome log: `<repo>/argus_common/logs/monitor.log`
 
 ## Hard constraints
 - **Do NOT touch git.** A separate cron (`*/30 * * * *` → `git_sync.py`) already
@@ -99,7 +99,7 @@ section if a decision was made worth remembering.
 A run reaches a demo when a 🎬 DEMO checkpoint's preceding steps are all `[x]`,
 **or** you produced a runnable, user-visible artifact. If so, send Slack + Email:
 ```
-cd <mount>/argus/argus_architect && python3 notify.py \
+cd <mount>/argus_common/argus_architect && python3 notify.py \
   --subject "focus_coach_native — DEMO <milestone>: <one-line>" \
   "What's ready: <1-2 sentences>.
 How to see it: <exact command(s) to run from the repo>.

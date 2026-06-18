@@ -1,6 +1,6 @@
 # Migrating the Birthdays agent (+ Argus) to a new Mac
 
-This sets up the `birthdays` agent and the shared `argus/` notification/monitor
+This sets up the `birthdays` agent and the shared `argus_common/` notification/monitor
 layer on a fresh machine. Steps are ordered; the gotchas are called out.
 
 > Throughout, `REPO` = the repo root, e.g. `~/PROJ/ASHANBH/personal_agents`.
@@ -39,22 +39,22 @@ WHATSAPP_TO=+1XXXXXXXXXX        # your own number
 ## 3. Build the virtualenvs (per machine — never copy `.venv`)
 ```bash
 cd "$REPO/birthdays" && POETRY_VIRTUALENVS_IN_PROJECT=true poetry install
-cd "$REPO/argus"     && POETRY_VIRTUALENVS_IN_PROJECT=true poetry install
+cd "$REPO/argus_common"     && POETRY_VIRTUALENVS_IN_PROJECT=true poetry install
 ```
 > A `.venv` built on another OS/arch will NOT run here — always rebuild.
 > Slack/email require the **argus** venv; the wrapper auto-falls back to
-> `poetry run` if `argus/.venv` is missing/incompatible.
+> `poetry run` if `argus_common/.venv` is missing/incompatible.
 
 ## 4. Seed data
 If `birthdays/data/birthdays.csv` didn't come over, the first scheduled run
 rebuilds it from the Google Sheet via `sync_birthdays.py`. To seed immediately:
 ```bash
-cd "$REPO/birthdays/code" && python3 sync_birthdays.py
+cd "$REPO/birthdays/src" && python3 sync_birthdays.py
 ```
 (If the sheet ID/GID differs, set `BIRTHDAYS_SHEET_ID` / `BIRTHDAYS_SHEET_GID`.)
 
 ## 5. Fix absolute paths (only if username/path differ)
-- `birthdays/code/com.claudia.birthday.plist` hard-codes
+- `birthdays/src/launchd/com.claudia.birthday.plist` hard-codes
   `/Users/amit/PROJ/ASHANBH/personal_agents/...` in `ProgramArguments` and the
   `StandardOutPath`/`StandardErrorPath`. Edit those to the new absolute path.
 - `birthday_cron.sh` is **location-independent** (no edit needed).
@@ -63,7 +63,7 @@ cd "$REPO/birthdays/code" && python3 sync_birthdays.py
 
 ## 6. Install the launchd agent (daily 11:00 local)
 ```bash
-cp "$REPO/birthdays/code/com.claudia.birthday.plist" ~/Library/LaunchAgents/
+cp "$REPO/birthdays/src/launchd/com.claudia.birthday.plist" ~/Library/LaunchAgents/
 launchctl bootout  gui/$(id -u)/com.claudia.birthday 2>/dev/null   # if re-installing
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.claudia.birthday.plist
 launchctl print gui/$(id -u)/com.claudia.birthday | grep -E "state|program|path"
@@ -73,7 +73,7 @@ launchctl print gui/$(id -u)/com.claudia.birthday | grep -E "state|program|path"
 ## 7. Grant macOS permissions (one-time, interactive)
 Run the wrapper once so the OS prompts appear, then approve them:
 ```bash
-bash "$REPO/birthdays/code/birthday_cron.sh"
+bash "$REPO/birthdays/src/birthday_cron.sh"
 tail -30 "$REPO/birthdays/logs/run.log"
 ```
 Approve under **System Settings → Privacy & Security**:
@@ -83,7 +83,7 @@ Approve under **System Settings → Privacy & Security**:
 
 ## 8. Smoke-test each notifier
 ```bash
-cd "$REPO/argus"
+cd "$REPO/argus_common"
 poetry run python notify_via_slack.py "migration test"
 poetry run python notify_via_email.py --subject "migration test" "ok"
 python3 notify_via_desktop.py "migration test"
@@ -95,7 +95,7 @@ python3 notify_via_whatsapp.py
 The weekly health check is a **Cowork/Claude scheduled task**
 (`argus-birthday-monitor`, Wednesdays 3 PM), not a repo file. Recreate it in the
 Claude app: a recurring task (cron `0 15 * * 3`) whose prompt points at
-`argus/argus_birthdays/monitor_prompt.md`.
+`birthdays/argus/ARGUS.md`.
 
 ## 10. Verify end-to-end
 - Temporarily add a TEST row dated **today** to `birthdays/data/birthdays.csv`
@@ -106,7 +106,7 @@ Claude app: a recurring task (cron `0 15 * * 3`) whose prompt points at
 ## Checklist
 - [ ] Repo cloned **outside** Desktop/Documents/Downloads
 - [ ] `.env` recreated with all 8 keys
-- [ ] `birthdays/.venv` and `argus/.venv` rebuilt via `poetry install`
+- [ ] `birthdays/.venv` and `argus_common/.venv` rebuilt via `poetry install`
 - [ ] `birthdays.csv` present (or synced)
 - [ ] plist paths updated (if username changed) + launchd loaded
 - [ ] Automation + Accessibility + Notifications granted

@@ -24,7 +24,7 @@ the public CSV export:
 
 Locally the phone column is stored as **`Phone Number`** (sync maps it).
 
-## Daily pipeline (`code/birthday_cron.sh`, via launchd at 11:00 local)
+## Daily pipeline (`src/birthday_cron.sh`, via launchd at 11:00 local)
 1. **`sync_birthdays.py`** — pull the sheet, merge new/changed rows into
    `data/birthdays.csv` (never deletes local-only rows like the TEST rows; blank
    sheet cells never erase local values), then regenerate `data/birthdays_clean.csv`.
@@ -35,7 +35,7 @@ Locally the phone column is stored as **`Phone Number`** (sync maps it).
 4. **`postprocess.py`** — Sunday-only: gzip every `logs/*.log` into
    `logs/archive/` and truncate. No-op other days.
 
-## Files (`code/`)
+## Files (`src/`)
 - `sync_birthdays.py` — sheet → `birthdays.csv` merge (stdlib only).
 - `preprocess.py` — `birthdays.csv` → `birthdays_clean.csv`: trims, normalizes
   Method, E.164-normalizes each comma-separated number, zero-pads `MM/DD`.
@@ -53,7 +53,7 @@ Locally the phone column is stored as **`Phone Number`** (sync maps it).
 - `backup/` — original raw import, contacts export (.vcf), phone-match log.
   (`data/` and `logs/` are gitignored — they hold personal numbers.)
 
-## Notifications (handled by the shared `../argus/` layer)
+## Notifications (handled by the shared `../argus_common/` layer)
 The wrapper relays the reminder to **Amit only** via:
 - **Slack** (`notify_via_slack.py`) — needs the argus poetry venv.
 - **Email** (`notify_via_email.py`) — needs the argus poetry venv.
@@ -64,8 +64,8 @@ Secrets/targets live in the repo-root `.env`.
 
 ## Monitoring (Argus)
 A Cowork scheduled task **`argus-birthday-monitor`** runs **Wednesdays 3 PM**.
-It runs `../argus/argus_birthdays/collect_status.py`, applies judgment per
-`../argus/argus_birthdays/monitor_prompt.md`, and alerts via Slack+email **only**
+It runs `argus/src/collect_status.py`, applies judgment per
+`argus/ARGUS.md`, and alerts via Slack+email **only**
 if something is broken (stale runs, send/sync failures, missing files).
 
 ## Guardrails / known issues
