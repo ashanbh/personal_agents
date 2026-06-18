@@ -23,7 +23,8 @@ import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.abspath(os.path.join(HERE, "..", ".."))                  # personal_agents
+# focusmon/argus/src/  → focusmon/argus/  → focusmon/  → personal_agents/
+REPO = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 FOCUSMON = os.path.join(REPO, "focusmon")
 SRC = os.path.join(FOCUSMON, "src")
 LOGS = os.path.join(FOCUSMON, "logs")
