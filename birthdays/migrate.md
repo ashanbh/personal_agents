@@ -10,7 +10,7 @@ layer on a fresh machine. Steps are ordered; the gotchas are called out.
 ## 0. Prerequisites
 - macOS with **Messages** signed in to iMessage, and **WhatsApp desktop**
   installed + logged in (only needed if you'll use those channels).
-- **Python 3.10+** available to Poetry (the argus venv requires ≥3.10).
+- **Python 3.10+** available to Poetry (the argus_common venv requires ≥3.10).
   The stdlib notifiers also run under the system `python3` (3.9-safe).
 - **Homebrew**, **Poetry**, and optionally `brew install terminal-notifier`
   (nicer desktop banners).
@@ -42,7 +42,7 @@ cd "$REPO/birthdays" && POETRY_VIRTUALENVS_IN_PROJECT=true poetry install
 cd "$REPO/argus_common"     && POETRY_VIRTUALENVS_IN_PROJECT=true poetry install
 ```
 > A `.venv` built on another OS/arch will NOT run here — always rebuild.
-> Slack/email require the **argus** venv; the wrapper auto-falls back to
+> Slack/email require the **argus_common** venv; the wrapper auto-falls back to
 > `poetry run` if `argus_common/.venv` is missing/incompatible.
 
 ## 4. Seed data

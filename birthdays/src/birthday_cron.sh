@@ -3,7 +3,7 @@
 # birthday_cron.sh — wrapper invoked by launchd (or cron) each morning.
 # REMIND-ONLY MODE: it does NOT send any iMessage/WhatsApp itself. It figures
 # out whose birthday is today and reminds YOU via Slack + email (using the
-# argus notifiers) so you can send the messages personally.
+# argus_common notifiers) so you can send the messages personally.
 # (Manual sending is still available: `python3 send_birthday_messages.py --send`.)
 #
 # Scheduled via the launchd agent src/launchd/com.claudia.birthday.plist (11:00 AM).
@@ -31,7 +31,7 @@ REMIND="$(/usr/bin/python3 send_birthday_messages.py --csv "$CSV" --remind 2>> "
 # 3. Relay the reminder to Amit via Slack + email — never message recipients.
 if [ -n "$REMIND" ]; then
     echo "$REMIND" >> "$LOG"
-    # Slack/email need requests+dotenv (the argus poetry venv). Verify the venv
+    # Slack/email need requests+dotenv (the argus_common poetry venv). Verify the venv
     # actually works (a Linux-built .venv won't run on macOS); else try poetry.
     export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
     if "$ARGUS/.venv/bin/python" -c "import requests, dotenv" >/dev/null 2>&1; then
@@ -39,7 +39,7 @@ if [ -n "$REMIND" ]; then
     elif command -v poetry >/dev/null 2>&1; then
         run_argus() { (cd "$ARGUS" && poetry run python "$@"); }
     else
-        echo "WARNING: no working argus venv and poetry not found — Slack/email skipped. Run: cd $ARGUS && POETRY_VIRTUALENVS_IN_PROJECT=true poetry install" >> "$LOG"
+        echo "WARNING: no working argus_common venv and poetry not found — Slack/email skipped. Run: cd $ARGUS && POETRY_VIRTUALENVS_IN_PROJECT=true poetry install" >> "$LOG"
         run_argus() { :; }
     fi
     run_argus "$ARGUS/notify_via_slack.py" "$REMIND" >> "$LOG" 2>&1

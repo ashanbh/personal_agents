@@ -55,8 +55,8 @@ Locally the phone column is stored as **`Phone Number`** (sync maps it).
 
 ## Notifications (handled by the shared `../argus_common/` layer)
 The wrapper relays the reminder to **Amit only** via:
-- **Slack** (`notify_via_slack.py`) — needs the argus poetry venv.
-- **Email** (`notify_via_email.py`) — needs the argus poetry venv.
+- **Slack** (`notify_via_slack.py`) — needs the argus_common poetry venv.
+- **Email** (`notify_via_email.py`) — needs the argus_common poetry venv.
 - **Desktop banner** (`notify_via_desktop.py`) — stdlib; terminal-notifier or osascript.
 - **iMessage to self** (`notify_via_imessage.py`) — stdlib; `IMESSAGE_TO`.
 - **WhatsApp to self** (`notify_via_whatsapp.py`) — stdlib; `WHATSAPP_TO`.
@@ -72,7 +72,7 @@ if something is broken (stale runs, send/sync failures, missing files).
 - **Never sends to recipients** in the scheduled flow — remind-only by design.
 - The `.venv` folders are platform-specific and gitignored — must be rebuilt
   with `poetry install` on each machine (a Linux-built venv won't run on macOS).
-- Slack/email run only inside the argus poetry venv (their deps need Python
+- Slack/email run only inside the argus_common poetry venv (their deps need Python
   ≥3.10); the other notifiers run under the system `python3` (kept 3.9-safe).
 - `send_group_imessage` has hit AppleScript error **-1700** on some macOS
   versions; doesn't affect remind-only operation, but verify before any manual

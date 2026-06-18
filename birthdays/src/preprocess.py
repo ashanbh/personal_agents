@@ -73,8 +73,13 @@ def main() -> int:
     ap.add_argument("--output", default=DEFAULT_OUT)
     args = ap.parse_args()
 
-    in_path = os.path.abspath(args.input)
-    out_path = os.path.abspath(args.output)
+    # Absolute paths are used as-is; RELATIVE paths resolve against the agent
+    # root (birthdays/), not the current dir — so `--output data/foo.csv` always
+    # lands in birthdays/data/ no matter where you run the script from.
+    agent_root = os.path.abspath(os.path.join(HERE, ".."))
+    in_path = args.input if os.path.isabs(args.input) else os.path.join(agent_root, args.input)
+    out_path = args.output if os.path.isabs(args.output) else os.path.join(agent_root, args.output)
+    os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
 
     with open(in_path, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
