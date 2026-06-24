@@ -7,5 +7,4 @@
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$PATH"
 cd "$HOME/PROJ/ASHANBH/personal_agents/focusmon/src" || exit 1
-poetry run python override_hour.py "$@"
-open "swiftbar://refreshplugin?name=focusmon.1m"
+exec poetry run python override_hour.py "$@"
