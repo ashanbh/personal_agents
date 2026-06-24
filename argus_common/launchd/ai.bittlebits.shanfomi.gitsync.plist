@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>ai.bittlebits.shanfomi.gitsync</string>
+
+  <!--
+    Auto-commit + push the shanfomi_fable project every 15 minutes.
+
+    git_sync.py stages ONLY shanfomi_fable (never `git add -A`) and no-ops when
+    there's nothing to commit, so this pushes only real changes and is quiet
+    when idle. The sync's own log goes to argus_common/logs/ (gitignored), so it
+    can never create a self-triggering change.
+
+    Install (one-time):
+      mkdir -p ~/Library/LaunchAgents
+      ln -sf ~/PROJ/ASHANBH/personal_agents/argus_common/launchd/ai.bittlebits.shanfomi.gitsync.plist \
+            ~/Library/LaunchAgents/ai.bittlebits.shanfomi.gitsync.plist
+      launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/ai.bittlebits.shanfomi.gitsync.plist
+
+    Reload after editing:
+      launchctl bootout  gui/$(id -u)/ai.bittlebits.shanfomi.gitsync 2>/dev/null
+      launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/ai.bittlebits.shanfomi.gitsync.plist
+
+    Run once on demand:
+      launchctl kickstart -p gui/$(id -u)/ai.bittlebits.shanfomi.gitsync
+
+    Uninstall:
+      launchctl bootout gui/$(id -u)/ai.bittlebits.shanfomi.gitsync
+      rm ~/Library/LaunchAgents/ai.bittlebits.shanfomi.gitsync.plist
+
+    Note: push needs your SSH key reachable from the GUI launchd session
+    (add the key to the macOS keychain so launchd can use it for git push).
+  -->
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>cd ~/PROJ/ASHANBH/personal_agents/argus_common &amp;&amp; bash auto_git_sync.sh ~/PROJ/ASHANBH/personal_agents/shanfomi_fable</string>
+  </array>
+
+  <!-- Every 15 minutes. launchd also fires a catch-up run after wake/login. -->
+  <key>StartInterval</key>
+  <integer>900</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/Users/amit/PROJ/ASHANBH/personal_agents/argus_common/logs/gitsync.launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/amit/PROJ/ASHANBH/personal_agents/argus_common/logs/gitsync.launchd.log</string>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/amit/PROJ/ASHANBH/personal_agents/argus_common</string>
+
+  <!-- launchd inherits a near-empty PATH; the -lc login shell restores it, this
+       is belt-and-braces so git/ssh resolve. -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+</dict>
+</plist>
