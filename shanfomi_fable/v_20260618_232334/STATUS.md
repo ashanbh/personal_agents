@@ -8,9 +8,9 @@ repo so work can resume on any machine. Read `DESIGN.md` first, then this.
 | Item | State |
 |---|---|
 | DESIGN.md v0.3 | **PM-approved.** Includes deterrent ladder + justification flow (v0.2) and "Python is interim, notifications move to a web gateway" (v0.3) |
-| M1 code | **Written, NOT yet compiled.** Swift never built (engineering sandbox is Linux; no Xcode). `make build` on a Mac is the next action |
+| M1 code | **BUILDS GREEN on macOS (2026-06-18).** `swift build -c release` ~4s, `swift test` 12/12 pass (arm64 macos14). Refactored into `FomiCore` library + thin `FomiForMe` executable to fix executable-target testing + Bundle.module resource resolution. Only warnings are benign openssl linker search-path notices. |
+| Run status | Launch via `bash scripts/run_app.command` (binary at app/.build/release/FomiForMe). Live menu-bar demo pending confirmation |
 | Python layer | Working. 14/14 pytest pass; digest + health-check smoke-tested end-to-end with synthetic data |
-| Computer-use build attempt | User denied screen-control permission (Script Editor/Finder/Terminal) on 2026-06-10 — build must be run manually or permission re-granted |
 | M2–M5 | Not started |
 
 ## Immediate next steps

@@ -1,0 +1,22 @@
++ BIN=app/.build/release/FomiForMe
++ '[' '!' -x app/.build/release/FomiForMe ']'
++ pkill -x FomiForMe
++ true
++ sleep 1
++ sleep 6
++ nohup app/.build/release/FomiForMe
++ pgrep -x FomiForMe
++ echo APP_RUNNING
+APP_RUNNING
++ echo '--- app.log ---'
+--- app.log ---
++ cat logs/app.log
++ echo '--- store dir ---'
+--- store dir ---
++ ls -la '/Users/amit/Library/Application Support/FomiForMe/'
+total 56
+drwxr-xr-x    3 amit  staff     96 Jun 18 16:13 .
+drwx------+ 208 amit  staff   6656 Jun 18 16:13 ..
+-rw-r--r--    1 amit  staff  28672 Jun 18 16:13 fomi4me.sqlite
++ echo '=== DONE ==='
+=== DONE ===

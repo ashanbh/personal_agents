@@ -221,9 +221,15 @@ def print_terminal_report(stats: DayStats, subject: str, plain: str,
 
 
 def print_swiftbar_daily(stats: DayStats, focused: int, goal: int, pct: int, goal_met: bool) -> None:
+    import os as _os
     weekday = stats.target.strftime("%a")
     color  = "#1b8a3a" if goal_met else "#c0392b"
     icon   = "✅" if goal_met else "📊"
+
+    override_script = _os.path.expanduser(
+        "~/PROJ/ASHANBH/personal_agents/swiftbar/focusmon_override.sh"
+    )
+    date_str = stats.target.isoformat()
 
     print(f"{icon} {focused}h / {goal}h  {pct}% | color={color} font=Menlo-Bold size=13")
     print("---")
@@ -253,6 +259,10 @@ def print_swiftbar_daily(stats: DayStats, focused: int, goal: int, pct: int, goa
             row_color, pct_str = "#c0392b", f"{pct_val:>3}%"
 
         print(f"{s.label:<5} {bar} {pct_str} | font=Menlo size=12 color={row_color}")
+        # Sub-menu: override options for this hour
+        print(f"-- ✅ Mark {s.label} as focused | bash={override_script} param1={date_str} param2={s.hour} param3=yes terminal=false refresh=true")
+        print(f"-- ❌ Mark {s.label} as not focused | bash={override_script} param1={date_str} param2={s.hour} param3=no terminal=false refresh=true")
+        print(f"-- ↩ Clear override for {s.label} | bash={override_script} param1={date_str} param2={s.hour} param3=clear terminal=false refresh=true")
 
     print("---")
     print("Refresh | refresh=true")

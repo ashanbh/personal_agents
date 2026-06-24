@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-RULES = Path(__file__).resolve().parent.parent / "app" / "Sources" / "FomiForMe" / "Rules"
+RULES = Path(__file__).resolve().parent.parent / "app" / "Sources" / "FomiCore" / "Rules"
 PERSONAS = ["engineer", "accountant", "doctor"]
 
 REQUIRED_KEYS = {

@@ -20,8 +20,23 @@ from datetime import datetime
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parent.parent
-sys.path.insert(0, str(REPO / "src"))
+REPO = HERE.parent.parent  # shanfomi_fable root (argus/, data/, logs/ are shared here)
+
+
+def _current_src() -> Path:
+    """Locate the active version's src/. Code is versioned (v_YYYYMMDD_HHMMSS/);
+    data/, argus/, logs/ stay shared at the repo root. Prefer the `current`
+    symlink, else the newest v_* dir, else a flat src/ (pre-versioning layout)."""
+    cur = REPO / "current" / "src"
+    if cur.exists():
+        return cur
+    versions = sorted(REPO.glob("v_*/src"))
+    if versions:
+        return versions[-1]
+    return REPO / "src"
+
+
+sys.path.insert(0, str(_current_src()))
 
 import fomi4me_db  # noqa: E402
 

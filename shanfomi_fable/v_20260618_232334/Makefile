@@ -2,13 +2,18 @@ REPO := $(shell pwd)
 PLIST := ai.bittlebits.fomi4me.digest
 LAUNCH_AGENTS := $(HOME)/Library/LaunchAgents
 
-.PHONY: build run test test-swift test-python install-launchd uninstall-launchd health digest
+.PHONY: build run app test test-swift test-python install-launchd uninstall-launchd health digest
 
 build:
 	cd app && swift build -c release
 
 run: build
 	./app/.build/release/FomiForMe
+
+# Assemble a double-clickable dist/FomiForMe.app (menu-bar agent).
+app:
+	bash scripts/make_app.command && open dist/FomiForMe.app
+	@echo "Built dist/FomiForMe.app — double-click it in Finder, or drag to /Applications."
 
 test: test-python test-swift
 
