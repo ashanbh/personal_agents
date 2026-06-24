@@ -6,46 +6,14 @@
 warning: 'app': ld: warning: search path '/usr/local/opt/openssl/lib/' not found
 [0/1] Planning build
 Building for production...
-[0/2] Write swift-version--58304C5D6DBC2206.txt
-[2/3] Compiling FomiCore AppDelegate.swift
-[3/4] Compiling FomiForMe main.swift
-Build complete! (0.88s)
-+ BIN=app/.build/release/FomiForMe
-+ '[' -x app/.build/release/FomiForMe ']'
-+ rm -rf dist/FomiForMe.app
-+ mkdir -p dist/FomiForMe.app/Contents/MacOS dist/FomiForMe.app/Contents/Resources
-+ cp app/.build/release/FomiForMe dist/FomiForMe.app/Contents/MacOS/FomiForMe
-+ chmod +x dist/FomiForMe.app/Contents/MacOS/FomiForMe
-++ find app/.build/release -maxdepth 1 -name '*_FomiCore.bundle'
-++ head -1
-+ RESBUNDLE=
-+ '[' -n '' ']'
-+ echo 'WARN: FomiCore resource bundle not found — persona rules will fail to load'
-WARN: FomiCore resource bundle not found — persona rules will fail to load
-+ cat
-+ codesign --force --deep --sign - dist/FomiForMe.app
-++ pwd
-+ echo 'APP_BUILT at /Users/amit/PROJ/ASHANBH/personal_agents/shanfomi_fable/dist/FomiForMe.app'
-APP_BUILT at /Users/amit/PROJ/ASHANBH/personal_agents/shanfomi_fable/dist/FomiForMe.app
-+ ls -la dist/FomiForMe.app/Contents dist/FomiForMe.app/Contents/MacOS dist/FomiForMe.app/Contents/Resources
-dist/FomiForMe.app/Contents:
-total 8
-drwxr-xr-x  3 amit  staff   96 Jun 18 16:17 _CodeSignature
-drwxr-xr-x  6 amit  staff  192 Jun 18 16:17 .
-drwxr-xr-x  3 amit  staff   96 Jun 18 16:17 ..
--rw-r--r--  1 amit  staff  906 Jun 18 16:17 Info.plist
-drwxr-xr-x  3 amit  staff   96 Jun 18 16:17 MacOS
-drwxr-xr-x  2 amit  staff   64 Jun 18 16:17 Resources
-
-dist/FomiForMe.app/Contents/MacOS:
-total 480
-drwxr-xr-x  3 amit  staff      96 Jun 18 16:17 .
-drwxr-xr-x  6 amit  staff     192 Jun 18 16:17 ..
--rwxr-xr-x  1 amit  staff  245216 Jun 18 16:17 FomiForMe
-
-dist/FomiForMe.app/Contents/Resources:
-total 0
-drwxr-xr-x  2 amit  staff   64 Jun 18 16:17 .
-drwxr-xr-x  6 amit  staff  192 Jun 18 16:17 ..
+[0/6] Write sources
+[2/6] Copying Rules
+[3/6] Write swift-version--58304C5D6DBC2206.txt
+[5/7] Compiling FomiCore AppDelegate.swift
+<unknown>:0: error: precompiled file '/Users/amit/PROJ/ASHANBH/personal_agents/shanfomi_fable/v_20260618_232334/app/.build/arm64-apple-macosx/release/ModuleCache/1R8N3HXJA9P3Z/SwiftShims-2IMTS4WWRU7VJ.pcm' was compiled with module cache path '/Users/amit/PROJ/ASHANBH/personal_agents/shanfomi_fable/app/.build/arm64-apple-macosx/release/ModuleCache/1R8N3HXJA9P3Z', but the path is currently '/Users/amit/PROJ/ASHANBH/personal_agents/shanfomi_fable/v_20260618_232334/app/.build/arm64-apple-macosx/release/ModuleCache/1R8N3HXJA9P3Z'
+<unknown>:0: error: missing required module 'SwiftShims'
++ echo BUILD_FAILED
+BUILD_FAILED
 + echo '=== DONE ==='
 === DONE ===
++ exit 1
